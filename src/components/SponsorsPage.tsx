@@ -83,7 +83,6 @@ export const SponsorsPage: React.FC<SponsorsPageProps> = ({
                 key={slot.id}
                 href={slot.siteUrl}
                 target="_blank"
-                rel="noopener noreferrer"
                 onClick={() => triggerHaptic('light')}
                 className={`group relative flex flex-col items-center justify-center text-center p-3.5 min-h-[90px] rounded-2xl border transition-all duration-300 hover:scale-[1.02] ${
                   isMaple
@@ -163,7 +162,6 @@ export const SponsorsPage: React.FC<SponsorsPageProps> = ({
           <motion.a
             href="http://ui.shadcn.com/docs/directory?q=amicro"
             target="_blank"
-            rel="noopener noreferrer"
             whileHover={{ y: -3 }}
             onClick={() => triggerHaptic('light')}
             className={`group relative p-5 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[145px] no-underline ${
@@ -198,7 +196,6 @@ export const SponsorsPage: React.FC<SponsorsPageProps> = ({
           <motion.a
             href="https://ossium.in/home/repos/Subhan-code/Amicro--Micro-transitions-"
             target="_blank"
-            rel="noopener noreferrer"
             whileHover={{ y: -3 }}
             onClick={() => triggerHaptic('light')}
             className={`group relative p-5 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[145px] no-underline ${

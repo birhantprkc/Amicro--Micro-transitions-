@@ -198,7 +198,6 @@ export const AppleSponsorShowcase: React.FC<AppleSponsorShowcaseProps> = ({
               <a
                 href="https://maple.dev/"
                 target="_blank"
-                rel="noopener noreferrer"
                 onClick={() => triggerHaptic('light')}
                 className={`hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all duration-200 group ${
                   isDark
@@ -293,7 +292,6 @@ export const AppleSponsorShowcase: React.FC<AppleSponsorShowcaseProps> = ({
                 <motion.a
                   href="https://maple.dev/"
                   target="_blank"
-                  rel="noopener noreferrer"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => triggerHaptic('medium')}
@@ -520,7 +518,6 @@ export const AppleSponsorShowcase: React.FC<AppleSponsorShowcaseProps> = ({
                   <a 
                     href="https://maple.dev/" 
                     target="_blank" 
-                    rel="noopener noreferrer"
                     className="text-[#E86F00] hover:underline font-semibold flex items-center gap-0.5"
                   >
                     <span>Read Docs</span>
