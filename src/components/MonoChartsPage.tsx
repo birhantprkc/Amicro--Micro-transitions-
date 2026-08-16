@@ -424,7 +424,6 @@ export function MonoChartsPage({
                     key={slot.id}
                     href={slot.siteUrl}
                     target="_blank"
-                    rel="noopener noreferrer"
                     onClick={() => triggerHaptic?.('light')}
                     className={`group relative flex flex-col items-center justify-center text-center p-3 sm:p-3.5 min-h-[78px] rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
                       isMaple
