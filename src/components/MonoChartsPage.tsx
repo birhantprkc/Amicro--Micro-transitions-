@@ -6,7 +6,10 @@ import {
   Circle,
   Github,
   ExternalLink,
+  ArrowLeft,
+  ArrowDownAZ,
 } from 'lucide-react';
+import { MapleLogo } from './MapleLogo';
 
 import { MonoActivityHeatmap } from './mono-charts/MonoActivityHeatmap';
 import { MonoRoundedLineChart } from './mono-charts/MonoRoundedLineChart';
@@ -40,11 +43,22 @@ import { MonoRoundedRangeChart } from './mono-charts/MonoRoundedRangeChart';
 import { InViewRender } from './InViewRender';
 import { IconSwap, IconSwapItem } from './IconSwap';
 
+export interface SponsorSlot {
+  id: number;
+  companyName: string;
+  description: string;
+  logoType?: string;
+  siteUrl?: string;
+  isAvailable: boolean;
+}
+
 interface MonoChartsPageProps {
   theme: 'dark' | 'light';
   showToast?: (message: string) => void;
   triggerHaptic?: (type: 'success' | 'warning' | 'error' | 'light' | 'medium' | 'heavy') => void;
   onNavigateHome?: () => void;
+  sponsors?: SponsorSlot[];
+  checkoutUrl?: string;
 }
 
 interface MonoCardDef {
@@ -56,9 +70,32 @@ interface MonoCardDef {
   component: React.ReactNode;
 }
 
-export function MonoChartsPage({ theme, showToast, triggerHaptic }: MonoChartsPageProps) {
+export function MonoChartsPage({ 
+  theme, 
+  showToast, 
+  triggerHaptic, 
+  onNavigateHome,
+  sponsors,
+  checkoutUrl 
+}: MonoChartsPageProps) {
   const isDark = theme === 'dark';
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const defaultSponsorsList: SponsorSlot[] = useMemo(() => [
+    {
+      id: 1,
+      companyName: 'Maple',
+      description: 'Open-source observability built for AI, with fast traces, logs, and metrics powered by OpenTelemetry and ClickHouse.',
+      logoType: 'maple',
+      siteUrl: 'https://maple.dev/',
+      isAvailable: false,
+    },
+    { id: 2, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
+    { id: 3, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
+    { id: 4, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
+  ], []);
+
+  const activeSponsors = sponsors && sponsors.length > 0 ? sponsors : defaultSponsorsList;
 
   const handleCopy = (id: string, command: string) => {
     navigator.clipboard.writeText(command);
@@ -315,10 +352,32 @@ export function MonoChartsPage({ theme, showToast, triggerHaptic }: MonoChartsPa
   ], [theme]);
 
   return (
-    <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8 font-sans">
+    <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 pt-1 pb-8 flex flex-col items-center font-sans relative">
       
-      {/* Hero Header */}
-      <div className="flex flex-col items-center text-center gap-3 max-w-2xl mx-auto">
+      {/* Top Header Row with Back Button on Left */}
+      <div className="w-full relative flex items-center justify-center pt-2 mb-1">
+        {onNavigateHome && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2">
+            <button
+              onClick={() => {
+                if (triggerHaptic) triggerHaptic('light');
+                onNavigateHome();
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+                isDark 
+                  ? 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white' 
+                  : 'bg-neutral-100 border-neutral-200 text-neutral-700 hover:bg-neutral-200 hover:text-black'
+              }`}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Hero Header - Earlier Style, Moved Up */}
+      <div className="flex flex-col items-center text-center gap-2.5 max-w-2xl mx-auto mt-0 mb-6">
         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase transition-all shadow-sm ${
           isDark ? 'bg-white/10 text-neutral-200 border border-white/20' : 'bg-neutral-900 text-white border border-neutral-700'
         }`}>
@@ -351,8 +410,83 @@ export function MonoChartsPage({ theme, showToast, triggerHaptic }: MonoChartsPa
         </a>
       </div>
 
+      {/* Sponsor Ad Grid */}
+      <div className="w-full max-w-3xl mx-auto mb-8 px-4 sm:px-0 flex flex-col items-center">
+        <div className={`text-[10px] font-bold uppercase tracking-widest mb-3.5 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+          Sponsored by
+        </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+            {activeSponsors.map((slot) => {
+              if (!slot.isAvailable) {
+                const isMaple = slot.logoType === 'maple';
+                return (
+                  <a
+                    key={slot.id}
+                    href={slot.siteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => triggerHaptic?.('light')}
+                    className={`group relative flex flex-col items-center justify-center text-center p-3 sm:p-3.5 min-h-[78px] rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
+                      isMaple
+                        ? (isDark
+                            ? 'bg-[#1a1410] border-[#E86F00]/30 hover:border-[#E86F00]/50 hover:bg-[#231a14] text-white shadow-[inset_0_1px_0_rgba(232,111,0,0.15)]'
+                            : 'bg-[#FFF7ED] border-[#FDBA74]/80 hover:border-[#FB923C] hover:bg-[#FFEDD5] text-[#7C2D12] shadow-[0_2px_12px_rgba(232,111,0,0.06)]')
+                        : (isDark
+                            ? 'bg-[#181818] border-neutral-800/80 hover:bg-[#1e1e1e] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
+                            : 'bg-white border-neutral-200 hover:shadow-xs text-black shadow-2xs')
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center w-full">
+                      {isMaple ? (
+                        <div className="flex items-center gap-2 font-bold tracking-tight text-[13.5px] text-neutral-900 dark:text-orange-200">
+                          <MapleLogo className="w-5 h-5 shrink-0" />
+                          <span>Maple</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-1.5 font-bold tracking-tight text-[13.5px] text-emerald-500 w-full px-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                          <span className="truncate max-w-[120px]">{slot.companyName}</span>
+                        </div>
+                      )}
+                      <p className={`text-[10.5px] sm:text-[11px] leading-[14px] sm:leading-[15px] mt-1 font-medium line-clamp-2 w-full px-0.5 transition-colors ${
+                        isMaple
+                          ? (isDark ? 'text-orange-200/80 group-hover:text-orange-100' : 'text-[#9A3412] group-hover:text-[#7C2D12]')
+                          : (isDark ? 'text-neutral-400 group-hover:text-neutral-300' : 'text-neutral-600 group-hover:text-neutral-800')
+                      }`} title={slot.description}>
+                        {slot.description}
+                      </p>
+                    </div>
+                  </a>
+                );
+              } else {
+                return (
+                  <button
+                    key={slot.id}
+                    onClick={() => {
+                      triggerHaptic?.('medium');
+                      window.open(checkoutUrl || "https://buy.polar.sh/polar_cl_kgaC0fUqnLvTlW7A7RrvGQRaHzmTKjezxWNaA19AyV4", '_blank');
+                    }}
+                    className={`group flex flex-col items-center justify-center text-center p-3 sm:p-3.5 rounded-xl border border-dashed transition-all duration-300 hover:scale-[1.02] cursor-pointer bg-transparent min-h-[78px] ${
+                      isDark
+                        ? 'border-neutral-800 hover:border-neutral-700 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/10'
+                        : 'border-neutral-300 hover:border-neutral-400 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50/30'
+                    }`}
+                  >
+                    <span className="text-[12px] font-bold tracking-tight flex items-center gap-1">
+                      <span>+</span> Sponsor
+                    </span>
+                    <span className={`text-[9.5px] mt-1 transition-colors ${isDark ? 'text-neutral-500 group-hover:text-neutral-400' : 'text-neutral-500 group-hover:text-neutral-600'}`}>
+                      $49/mo
+                    </span>
+                  </button>
+                );
+              }
+            })}
+          </div>
+        </div>
+
       {/* Main Charts Showcase Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+      <div id="mono-charts-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
         <AnimatePresence mode="popLayout">
           {CARD_ITEMS.map((item) => (
             <motion.div

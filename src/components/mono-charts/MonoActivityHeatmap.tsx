@@ -142,28 +142,32 @@ export function MonoActivityHeatmap({
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       )}>
         {/* Month Headers */}
-        <div className="flex justify-center gap-1.5 mb-1.5 w-full">
+        <div className="flex justify-between items-center mb-2 w-[277px] max-w-full px-1">
           {MONTH_NAMES.slice(0, 5).map((m, idx) => (
-            <span key={idx} className={`text-[10px] font-mono flex-1 text-center ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+            <span key={idx} className={`text-[10px] font-mono text-center flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
               {m}
             </span>
           ))}
         </div>
 
-        {/* 20-Week Heatmap Grid */}
-        <div className="flex justify-center gap-1.5 w-full overflow-hidden" onMouseLeave={() => setHoveredDay(null)}>
+        {/* 20-Week Heatmap Grid with Strict Square Cells */}
+        <div 
+          className="flex justify-center items-center gap-[3px] w-auto max-w-full overflow-x-auto py-1" 
+          onPointerLeave={() => setHoveredDay(null)}
+        >
           {weeks.map((week, wIdx) => (
-            <div key={wIdx} className="flex flex-col gap-1.5 flex-1 items-center">
+            <div key={wIdx} className="flex flex-col gap-[3px] items-center shrink-0">
               {week.map((day, dIdx) => (
                 <motion.div
                   key={`${wIdx}-${dIdx}`}
-                  onMouseEnter={() => setHoveredDay(day)}
-                  className="w-full h-3 sm:h-3.5 rounded-[3px] transition-all cursor-pointer hover:scale-125"
+                  onPointerEnter={() => setHoveredDay(day)}
+                  onPointerDown={() => setHoveredDay(day)}
+                  className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] min-w-[10px] min-h-[10px] sm:min-w-[11px] sm:min-h-[11px] rounded-[2px] transition-all cursor-pointer"
                   style={{
                     backgroundColor: colorScale.bg,
                     opacity: opacityForLevel(day.level),
                   }}
-                  whileHover={{ scale: 1.25 }}
+                  whileHover={{ scale: 1.35, zIndex: 10 }}
                 />
               ))}
             </div>

@@ -53,7 +53,7 @@ export function MonoRoundedHeatmapChart({ theme = 'dark', compact = false }: Mon
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         {HEATMAP_DATA.map((row, rIdx) => (
-          <div key={rIdx} className="flex items-center justify-between gap-1.5">
+          <div key={rIdx} className="flex items-center justify-between gap-2 max-w-[280px] mx-auto w-full">
             <span className={`text-[10px] font-mono w-7 shrink-0 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
               {row.day}
             </span>
@@ -64,7 +64,7 @@ export function MonoRoundedHeatmapChart({ theme = 'dark', compact = false }: Mon
                   <div
                     key={cIdx}
                     title={`Activity: ${val}%`}
-                    className="h-4 sm:h-5 flex-1 rounded-md transition-all hover:scale-110 cursor-pointer"
+                    className="aspect-square flex-1 rounded-[4px] sm:rounded-[6px] transition-all hover:scale-110 cursor-pointer"
                     style={{
                       backgroundColor: isDark ? `rgba(255,255,255,${opacity})` : `rgba(9,9,11,${opacity})`,
                     }}

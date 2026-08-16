@@ -46,7 +46,7 @@ export function ThreeDPage({ theme, showToast, triggerHaptic, onNavigateHome }: 
             }`}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Components</span>
+            <span>Back</span>
           </button>
         )}
       </div>

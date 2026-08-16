@@ -3,7 +3,8 @@ import { motion, AnimatePresence, animate } from 'motion/react';
 import { 
   LayoutGrid, List, LayoutTemplate, ArrowDownAZ, Copy, Sun, Moon, Github, 
   Terminal, Check, Cpu, Zap, Code, ShieldCheck, Sparkles, RefreshCw, Smartphone, 
-  ChevronRight, ChevronDown, Shield, Layers, HelpCircle, Palette, Activity, Menu, X
+  ChevronRight, ChevronDown, Shield, Layers, HelpCircle, Palette, Activity, Menu, X,
+  Heart, Box, BarChart2
 } from 'lucide-react';
 import { buttonsData } from './data/buttons';
 import { AnimatedButton } from './components/AnimatedButton';
@@ -14,6 +15,9 @@ import { DitherChartsPage, SimpleCompPage } from './components/DitherChartsPage'
 import { MonoChartsPage } from './components/MonoChartsPage';
 import { DitherChartsGrid, SimpleCompGrid } from './components/dither-charts/DitherChartsGrid';
 import { ThreeDPage } from './components/ThreeDPage';
+import { MapleLogo } from './components/MapleLogo';
+import { AppleSponsorShowcase } from './components/AppleSponsorShowcase';
+import { SponsorsPage } from './components/SponsorsPage';
 import { useWebHaptics } from './hooks/useWebHaptics';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -40,7 +44,7 @@ import { CardTimeMachine } from './components/cards/CardTimeMachine';
 
 type LayoutMode = 'list' | 'grid' | 'matrix';
 type SortMode = 'default' | 'alphabetical';
-type PageMode = 'home' | 'cli' | 'skills' | 'dither-charts' | '3d-page' | 'simple-comp' | 'mono-charts';
+type PageMode = 'home' | 'cli' | 'skills' | 'dither-charts' | '3d-page' | 'simple-comp' | 'mono-charts' | 'sponsors';
 type CatalogTabType = 'buttons' | 'cards' | 'carousels' | 'loaders' | 'dither-charts' | 'simple-comp';
 
 interface SponsorSlot {
@@ -78,7 +82,7 @@ function AnimatedNumber({ value }: { value: number | null }) {
   }, [value]);
 
   if (value === null) return null;
-  return <>{displayValue.toLocaleString('en-US')}</>;
+  return <span className="tabular-nums">{displayValue.toLocaleString('en-US')}</span>;
 }
 
 export default function App() {
@@ -95,44 +99,38 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
+  const [navMoreDropdownOpen, setNavMoreDropdownOpen] = useState(false);
   const { trigger: triggerHaptic } = useWebHaptics();
 
-  const isOssiumActive = new Date() < new Date('2026-07-30T13:20:00Z');
-
   const [sponsors, setSponsors] = useState<SponsorSlot[]>(() => {
+    const defaultSponsors: SponsorSlot[] = [
+      {
+        id: 1,
+        companyName: 'Maple',
+        description: 'Open-source observability built for AI, with fast traces, logs, and metrics powered by OpenTelemetry and ClickHouse.',
+        logoType: 'maple',
+        siteUrl: 'https://maple.dev/',
+        isAvailable: false,
+      },
+      { id: 2, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
+      { id: 3, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
+      { id: 4, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
+    ];
+
     const cached = localStorage.getItem('amicro_sponsors');
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        // Sync active state of first slot (Ossium) based on live expiration
         if (parsed.length > 0) {
-          parsed[0] = {
-            id: 1,
-            companyName: isOssiumActive ? 'Ossium' : 'Available Slot',
-            description: isOssiumActive ? 'The ultimate hub for open-source contributors. Discover open-source projects, issues, and bounties from across the ecosystem.' : 'Advertise your product here.',
-            logoType: isOssiumActive ? 'ossium' : undefined,
-            siteUrl: isOssiumActive ? 'https://ossium.live/' : undefined,
-            isAvailable: !isOssiumActive,
-          };
+          // Always ensure slot 1 is Maple
+          parsed[0] = defaultSponsors[0];
         }
         return parsed;
       } catch (e) {
         console.error('Error parsing cached sponsors:', e);
       }
     }
-    return [
-      {
-        id: 1,
-        companyName: isOssiumActive ? 'Ossium' : 'Available Slot',
-        description: isOssiumActive ? 'The ultimate hub for open-source contributors. Discover open-source projects, issues, and bounties from across the ecosystem.' : 'Advertise your product here.',
-        logoType: isOssiumActive ? 'ossium' : undefined,
-        siteUrl: isOssiumActive ? 'https://ossium.live/' : undefined,
-        isAvailable: !isOssiumActive,
-      },
-      { id: 2, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
-      { id: 3, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
-      { id: 4, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
-    ];
+    return defaultSponsors;
   });
 
   // Sync sponsors list to localStorage whenever state updates
@@ -140,28 +138,43 @@ export default function App() {
     localStorage.setItem('amicro_sponsors', JSON.stringify(sponsors));
   }, [sponsors]);
 
-  // Hash-based router
+  // Clean Path Router (Without # hash)
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash.startsWith('#/cli') || hash.startsWith('#cli')) {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.replace(/^\//, '').toLowerCase();
+      const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+      const route = path || hash;
+
+      if (hash) {
+        // Automatically clean up any leftover hash in the URL
+        const cleanPath = hash === 'home' || hash === '' ? '/' : `/${hash}`;
+        window.history.replaceState(null, '', cleanPath);
+      }
+
+      if (route.startsWith('cli')) {
         setCurrentPage('cli');
-      } else if (hash.startsWith('#/skills') || hash.startsWith('#skills')) {
+      } else if (route.startsWith('skills')) {
         setCurrentPage('skills');
-      } else if (hash.startsWith('#/mono-charts') || hash.startsWith('#mono-charts')) {
+      } else if (route.startsWith('mono-charts')) {
         setCurrentPage('mono-charts');
-      } else if (hash.startsWith('#/dither-charts') || hash.startsWith('#dither-charts') || hash.startsWith('#/simple-comp') || hash.startsWith('#simple-comp')) {
+      } else if (route.startsWith('dither-charts') || route.startsWith('simple-comp')) {
         setCurrentPage('dither-charts');
-      } else if (hash.startsWith('#/3d') || hash.startsWith('#3d')) {
+      } else if (route.startsWith('3d')) {
         setCurrentPage('3d-page');
+      } else if (route.startsWith('sponsors')) {
+        setCurrentPage('sponsors');
       } else {
         setCurrentPage('home');
       }
     };
 
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    handleLocationChange();
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -358,19 +371,32 @@ export default function App() {
   const isLightTheme = theme === 'light';
 
   const navigateTo = (page: PageMode) => {
+    triggerHaptic('light');
+    let targetPath = '/';
     if (page === 'cli') {
-      window.location.hash = '#cli';
+      targetPath = '/cli';
     } else if (page === 'skills') {
-      window.location.hash = '#skills';
+      targetPath = '/skills';
     } else if (page === 'dither-charts' || page === 'simple-comp') {
-      window.location.hash = '#dither-charts';
+      targetPath = '/dither-charts';
     } else if (page === '3d-page') {
-      window.location.hash = '#3d';
+      targetPath = '/3d';
+    } else if (page === 'mono-charts') {
+      targetPath = '/mono-charts';
+    } else if (page === 'sponsors') {
+      targetPath = '/sponsors';
     } else {
-      window.location.hash = '';
+      targetPath = '/';
+    }
+
+    if (window.location.pathname !== targetPath || window.location.hash) {
+      window.history.pushState(null, '', targetPath);
     }
     setCurrentPage(page === 'simple-comp' ? 'dither-charts' : page);
     setMobileMenuOpen(false);
+    setNavMoreDropdownOpen(false);
+    setMoreDropdownOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -406,6 +432,7 @@ export default function App() {
               >
                 Components
               </button>
+
               <button 
                 onClick={() => navigateTo('cli')}
                 className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
@@ -416,6 +443,7 @@ export default function App() {
               >
                 CLI Install
               </button>
+
               <button 
                 onClick={() => navigateTo('skills')}
                 className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
@@ -426,6 +454,7 @@ export default function App() {
               >
                 Skills
               </button>
+
               <button 
                 onClick={() => navigateTo('mono-charts')}
                 className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
@@ -436,6 +465,7 @@ export default function App() {
               >
                 Mono Charts
               </button>
+
               <button 
                 onClick={() => navigateTo('dither-charts')}
                 className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
@@ -446,6 +476,7 @@ export default function App() {
               >
                 Dither Charts
               </button>
+
               <button 
                 onClick={() => navigateTo('3d-page')}
                 className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
@@ -455,6 +486,18 @@ export default function App() {
                 }`}
               >
                 3D Page
+              </button>
+
+              <button 
+                onClick={() => navigateTo('sponsors')}
+                className={`inline-flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                  currentPage === 'sponsors'
+                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
+                    : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
+                }`}
+              >
+                <span>Sponsors</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E86F00] animate-pulse" />
               </button>
             </nav>
           </div>
@@ -550,6 +593,16 @@ export default function App() {
                 Skills
               </button>
               <button 
+                onClick={() => navigateTo('mono-charts')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+                  currentPage === 'mono-charts'
+                    ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
+                    : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
+                }`}
+              >
+                Mono Charts
+              </button>
+              <button 
                 onClick={() => navigateTo('dither-charts')}
                 className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
                   currentPage === 'dither-charts' || currentPage === 'simple-comp'
@@ -568,6 +621,17 @@ export default function App() {
                 }`}
               >
                 3D Page
+              </button>
+              <button 
+                onClick={() => navigateTo('sponsors')}
+                className={`flex items-center justify-between h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+                  currentPage === 'sponsors'
+                    ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
+                    : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
+                }`}
+              >
+                <span>Sponsors</span>
+                <span className="w-2 h-2 rounded-full bg-[#E86F00]" />
               </button>
             </motion.div>
           )}
@@ -596,6 +660,22 @@ export default function App() {
           >
             <SkillsPage theme={theme} onNavigateHome={() => navigateTo('home')} />
           </motion.div>
+        ) : currentPage === 'sponsors' ? (
+          <motion.div
+            key="sponsors-page"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+          >
+            <SponsorsPage
+              theme={theme}
+              sponsors={sponsors}
+              checkoutUrl={POLAR_CHECKOUT_URL}
+              onNavigateHome={() => navigateTo('home')}
+              showToast={showToast}
+            />
+          </motion.div>
         ) : currentPage === 'mono-charts' ? (
           <motion.div
             key="mono-charts-page"
@@ -604,7 +684,14 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <MonoChartsPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} />
+            <MonoChartsPage
+              theme={theme}
+              sponsors={sponsors}
+              checkoutUrl={POLAR_CHECKOUT_URL}
+              showToast={showToast}
+              triggerHaptic={triggerHaptic}
+              onNavigateHome={() => navigateTo('home')}
+            />
           </motion.div>
         ) : currentPage === 'dither-charts' || currentPage === 'simple-comp' ? (
           <motion.div
@@ -614,7 +701,7 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <DitherChartsPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigate3D={() => navigateTo('3d-page')} />
+            <DitherChartsPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} onNavigate3D={() => navigateTo('3d-page')} />
           </motion.div>
         ) : currentPage === '3d-page' ? (
           <motion.div
@@ -719,6 +806,7 @@ export default function App() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
                     {sponsors.map((slot) => {
                       if (!slot.isAvailable) {
+                        const isMaple = slot.logoType === 'maple';
                         return (
                           <a
                             key={slot.id}
@@ -726,29 +814,33 @@ export default function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => triggerHaptic('light')}
-                            className={`group relative flex flex-col items-center justify-center text-center p-3 h-[58px] rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
-                              theme === 'dark'
-                                ? 'bg-[#181818] border-neutral-800/80 hover:bg-[#1e1e1e] text-white'
-                                : 'bg-white border-neutral-200 hover:shadow-xs text-black shadow-2xs'
+                            className={`group relative flex flex-col items-center justify-center text-center p-3 sm:p-3.5 min-h-[78px] rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
+                              isMaple
+                                ? (theme === 'dark'
+                                    ? 'bg-[#1a1410] border-[#E86F00]/30 hover:border-[#E86F00]/50 hover:bg-[#231a14] text-white shadow-[inset_0_1px_0_rgba(232,111,0,0.15)]'
+                                    : 'bg-[#FFF7ED] border-[#FDBA74]/80 hover:border-[#FB923C] hover:bg-[#FFEDD5] text-[#7C2D12] shadow-[0_2px_12px_rgba(232,111,0,0.06)]')
+                                : (theme === 'dark'
+                                    ? 'bg-[#181818] border-neutral-800/80 hover:bg-[#1e1e1e] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
+                                    : 'bg-white border-neutral-200 hover:shadow-xs text-black shadow-2xs')
                             }`}
                           >
                             <div className="flex flex-col items-center justify-center w-full">
-                              {slot.logoType === 'ossium' ? (
-                                <div className="flex items-center gap-1.5 font-bold tracking-tight text-[12px] text-neutral-900 dark:text-neutral-100">
-                                  <img 
-                                    src="https://ossium.live/_next/image?url=%2Fossium_logo.webp&w=256&q=75" 
-                                    alt="Ossium Logo" 
-                                    className="w-3.5 h-3.5 object-contain rounded-xs"
-                                  />
-                                  <span>Ossium</span>
+                              {isMaple ? (
+                                <div className="flex items-center gap-2 font-bold tracking-tight text-[13.5px] text-neutral-900 dark:text-orange-200">
+                                  <MapleLogo className="w-5 h-5 shrink-0" />
+                                  <span>Maple</span>
                                 </div>
                               ) : (
-                                <div className="flex items-center justify-center gap-1 font-bold tracking-tight text-[12px] text-emerald-500 w-full px-1">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                                <div className="flex items-center justify-center gap-1.5 font-bold tracking-tight text-[13.5px] text-emerald-500 w-full px-1">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
                                   <span className="truncate max-w-[120px]">{slot.companyName}</span>
                                 </div>
                               )}
-                              <p className={`text-[9.5px] leading-snug mt-0.5 font-medium truncate w-full px-1 transition-colors ${theme === 'dark' ? 'text-neutral-500 group-hover:text-neutral-400' : 'text-neutral-500 group-hover:text-neutral-750'}`}>
+                              <p className={`text-[10.5px] sm:text-[11px] leading-[14px] sm:leading-[15px] mt-1 font-medium line-clamp-2 w-full px-0.5 transition-colors ${
+                                isMaple
+                                  ? (theme === 'dark' ? 'text-orange-200/80 group-hover:text-orange-100' : 'text-[#9A3412] group-hover:text-[#7C2D12]')
+                                  : (theme === 'dark' ? 'text-neutral-400 group-hover:text-neutral-300' : 'text-neutral-600 group-hover:text-neutral-800')
+                              }`} title={slot.description}>
                                 {slot.description}
                               </p>
                             </div>
@@ -762,16 +854,16 @@ export default function App() {
                               triggerHaptic('medium');
                               window.open(POLAR_CHECKOUT_URL, '_blank');
                             }}
-                            className={`group flex flex-col items-center justify-center text-center p-3 rounded-xl border border-dashed transition-all duration-300 hover:scale-[1.02] cursor-pointer bg-transparent h-[58px] ${
+                            className={`group flex flex-col items-center justify-center text-center p-3 sm:p-3.5 rounded-xl border border-dashed transition-all duration-300 hover:scale-[1.02] cursor-pointer bg-transparent min-h-[78px] ${
                               theme === 'dark'
                                 ? 'border-neutral-800 hover:border-neutral-700 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/10'
                                 : 'border-neutral-300 hover:border-neutral-400 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50/30'
                             }`}
                           >
-                            <span className="text-[11px] font-bold tracking-tight flex items-center gap-1">
+                            <span className="text-[12px] font-bold tracking-tight flex items-center gap-1">
                               <span>+</span> Sponsor
                             </span>
-                            <span className={`text-[8.5px] mt-0.5 transition-colors ${theme === 'dark' ? 'text-neutral-600 group-hover:text-neutral-500' : 'text-neutral-400 group-hover:text-neutral-500'}`}>
+                            <span className={`text-[9.5px] mt-1 transition-colors ${theme === 'dark' ? 'text-neutral-500 group-hover:text-neutral-400' : 'text-neutral-500 group-hover:text-neutral-600'}`}>
                               $49/mo
                             </span>
                           </button>
@@ -838,18 +930,6 @@ export default function App() {
                                 {tab.label}
                               </button>
                             ))}
-                            <div className={`mt-2 pt-3 border-t px-4 py-2 flex flex-col gap-1 text-center select-none ${theme === 'dark' ? 'border-white/5' : 'border-neutral-100'}`}>
-                              <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                                theme === 'dark' ? 'text-[#ededed]' : 'text-black'
-                              }`}>
-                                More Coming Soon
-                              </span>
-                              <span className={`text-[10.5px] leading-normal italic ${
-                                theme === 'dark' ? 'text-[#767676]' : 'text-black opacity-70'
-                              }`}>
-                                "Motion is the brush stroke of digital art. More premium transitions are crafting behind the scenes."
-                              </span>
-                            </div>
                           </motion.div>
                         </>
                       )}
@@ -857,11 +937,11 @@ export default function App() {
                   </div>
 
                   {/* Desktop Category Switcher (Pills) */}
-                  <div className={`hidden sm:flex items-center p-1 rounded-full border shadow-inner transition-colors duration-300 max-w-full overflow-x-visible ${theme === 'dark' ? 'bg-[#181818] border-white/5' : 'bg-neutral-200/50 border-neutral-300/30'}`}>
-                    <div className="flex items-center gap-1.5 pr-1">
+                  <div className={`hidden sm:flex items-center p-1.5 rounded-full border shadow-inner transition-colors duration-300 max-w-full overflow-x-visible ${theme === 'dark' ? 'bg-[#181818] border-white/5' : 'bg-neutral-200/50 border-neutral-300/30'}`}>
+                    <div className="flex items-center gap-2 pr-1">
                       <button
                         onClick={() => setCatalogTab('buttons')}
-                        className={`flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'buttons' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
@@ -871,7 +951,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => setCatalogTab('cards')}
-                        className={`flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'cards' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
@@ -881,7 +961,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => setCatalogTab('carousels')}
-                        className={`flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'carousels' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
@@ -891,7 +971,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => setCatalogTab('loaders')}
-                        className={`flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'loaders' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
@@ -901,7 +981,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => setCatalogTab('dither-charts')}
-                        className={`flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'dither-charts' || catalogTab === 'simple-comp'
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
@@ -909,52 +989,6 @@ export default function App() {
                       >
                         Dither Charts
                       </button>
-
-                      {/* More Filters Dropdown */}
-                      <div className="relative animate-none">
-                        <button
-                          onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                          className={`flex-none flex items-center justify-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors cursor-pointer border-0 whitespace-nowrap ${
-                            theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'
-                          }`}
-                        >
-                          <span>More</span>
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        </button>
-
-                        <AnimatePresence>
-                          {moreDropdownOpen && (
-                            <>
-                              <div 
-                                className="fixed inset-0 z-40 bg-transparent" 
-                                onClick={() => setMoreDropdownOpen(false)} 
-                              />
-                              <motion.div
-                                initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                                animate={{ opacity: 1, y: 6, scale: 1 }}
-                                exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                                transition={{ duration: 0.15, ease: "easeOut" }}
-                                className={`absolute top-full right-0 z-50 rounded-[20px] border p-4 shadow-xl flex flex-col gap-2 min-w-[260px] text-center select-none backdrop-blur-xl ${
-                                  theme === 'dark' 
-                                    ? 'bg-[#181818]/95 border-white/5 text-[#ededed] shadow-black/40' 
-                                    : 'bg-white/95 border-neutral-200 text-black shadow-neutral-200/30'
-                                }`}
-                              >
-                                <div className={`font-bold text-[11px] uppercase tracking-widest mb-0.5 ${
-                                  theme === 'dark' ? 'text-[#ededed]' : 'text-black'
-                                }`}>
-                                  More Coming Soon
-                                </div>
-                                <p className={`text-[11px] leading-[15px] italic m-0 transition-colors ${
-                                  theme === 'dark' ? 'text-[#767676]' : 'text-black opacity-70'
-                                }`}>
-                                  "Motion is the brush stroke of digital art. More premium transitions are crafting behind the scenes."
-                                </p>
-                              </motion.div>
-                            </>
-                          )}
-                        </AnimatePresence>
-                      </div>
                     </div>
                   </div>
 
@@ -1211,9 +1245,9 @@ export default function App() {
                           <div 
                             onMouseEnter={() => setHoveredCardId(card.id)}
                             onMouseLeave={() => setHoveredCardId(null)}
-                            className={`relative w-full max-w-[480px] sm:w-[480px] h-[300px] sm:h-[390px] rounded-[24px] transition-all duration-300 group overflow-hidden ${theme === 'dark' ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]' : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-100/85 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] text-black'}`}
+                            className={`relative w-full max-w-[480px] sm:w-[480px] h-[300px] sm:h-[390px] rounded-[24px] transition-all duration-300 group ${hoveredCardId === card.id ? 'overflow-visible z-20' : 'overflow-hidden z-1'} ${theme === 'dark' ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]' : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-100/85 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] text-black'}`}
                           >
-                            <div className={`absolute left-[12px] top-[12px] right-[12px] h-[200px] sm:h-[290px] rounded-[14px] flex items-center justify-center overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-[#131313]' : 'bg-[#f4f4f6]'}`}>
+                            <div className={`absolute left-[12px] top-[12px] right-[12px] h-[200px] sm:h-[290px] rounded-[14px] flex items-center justify-center ${hoveredCardId === card.id ? 'overflow-visible' : 'overflow-hidden'} transition-colors duration-300 ${theme === 'dark' ? 'bg-[#131313]' : 'bg-[#f4f4f6]'}`}>
                               <div className={`absolute inset-0 rounded-[14px] pointer-events-none z-10 ${theme === 'dark' ? 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]' : 'shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)]'}`} />
                               {card.interactionType === 'card-arc-5' && <CardArc5 hovered={hoveredCardId === card.id} className="scale-[0.55] sm:scale-[1.2] origin-center" />}
                               {card.interactionType === 'card-arc-7' && <CardArc7 hovered={hoveredCardId === card.id} className="scale-[0.5] sm:scale-[1.2] origin-center" />}

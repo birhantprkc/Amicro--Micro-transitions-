@@ -37,16 +37,13 @@ export const AnimatedButton = React.memo(function AnimatedButton({ config, layou
   const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 });
 
   const handleMouseEnter = () => {
-    // Only hover on devices supporting hover to prevent sticky mobile states
-    if (window.matchMedia('(hover: hover)').matches) {
-      setIsHovered(true);
-    }
+    setIsHovered(true);
     if (config.interactionType === 'morph' && (config.id === '4' || config.id === '21' || config.id === '22' || config.id === '24' || config.id === '25')) {
       setHasInteracted(true);
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement> | React.PointerEvent<HTMLButtonElement>) => {
     if (config.interactionType === 'magnetic') {
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
@@ -56,9 +53,7 @@ export const AnimatedButton = React.memo(function AnimatedButton({ config, layou
   };
 
   const handleMouseLeave = () => {
-    if (window.matchMedia('(hover: hover)').matches) {
-      setIsHovered(false);
-    }
+    setIsHovered(false);
     if (config.interactionType === 'magnetic') {
       setMouseCoords({ x: 0, y: 0 });
     }
@@ -394,6 +389,9 @@ export const AnimatedButton = React.memo(function AnimatedButton({ config, layou
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onPointerEnter={handleMouseEnter}
+      onPointerLeave={handleMouseLeave}
+      onPointerMove={handleMouseMove}
       onFocus={handleMouseEnter}
       onBlur={handleMouseLeave}
       onTouchStart={handleTouchStart}
