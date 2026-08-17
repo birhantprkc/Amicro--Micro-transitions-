@@ -22,10 +22,25 @@ interface DitherChartsPageProps {
   triggerHaptic?: (type: 'success' | 'warning' | 'error' | 'light' | 'medium' | 'heavy') => void;
   onNavigateHome?: () => void;
   onNavigate3D?: () => void;
+  onSelectChart?: (id: string) => void;
 }
 
-export function DitherChartsPage({ theme, triggerHaptic, onNavigateHome }: DitherChartsPageProps) {
+export function DitherChartsPage({ theme, triggerHaptic, onNavigateHome, onSelectChart }: DitherChartsPageProps) {
   const isDark = theme === 'dark';
+
+  const DITHER_ITEMS = [
+    { id: 'dither-donut', comp: <DitherDonutChart theme={theme} /> },
+    { id: 'dither-stacked', comp: <DitherStackedChart theme={theme} /> },
+    { id: 'dither-growth', comp: <DitherGrowthChart theme={theme} /> },
+    { id: 'activity-heatmap', comp: <ActivityHeatmap theme={theme} /> },
+    { id: 'server-gauge', comp: <ServerGauge theme={theme} /> },
+    { id: 'traffic-bubble', comp: <TrafficBubble theme={theme} /> },
+    { id: 'dither-funnel', comp: <DitherFunnelChart theme={theme} /> },
+    { id: 'device-usage', comp: <DeviceUsageChart theme={theme} /> },
+    { id: 'storage-usage', comp: <StorageUsageChart theme={theme} /> },
+    { id: 'revenue-line', comp: <RevenueLineChart theme={theme} /> },
+    { id: 'uptime-chart', comp: <UptimeChart theme={theme} /> },
+  ];
 
   return (
     <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8 font-sans">
@@ -70,17 +85,20 @@ export function DitherChartsPage({ theme, triggerHaptic, onNavigateHome }: Dithe
 
       {/* Charts Showcase Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-        <InViewRender><DitherDonutChart theme={theme} /></InViewRender>
-        <InViewRender><DitherStackedChart theme={theme} /></InViewRender>
-        <InViewRender><DitherGrowthChart theme={theme} /></InViewRender>
-        <InViewRender><ActivityHeatmap theme={theme} /></InViewRender>
-        <InViewRender><ServerGauge theme={theme} /></InViewRender>
-        <InViewRender><TrafficBubble theme={theme} /></InViewRender>
-        <InViewRender><DitherFunnelChart theme={theme} /></InViewRender>
-        <InViewRender><DeviceUsageChart theme={theme} /></InViewRender>
-        <InViewRender><StorageUsageChart theme={theme} /></InViewRender>
-        <InViewRender><RevenueLineChart theme={theme} /></InViewRender>
-        <InViewRender><UptimeChart theme={theme} /></InViewRender>
+        {DITHER_ITEMS.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => {
+              if (onSelectChart) {
+                triggerHaptic?.('light');
+                onSelectChart(item.id);
+              }
+            }}
+            className="cursor-pointer transition-transform duration-200 hover:scale-[1.01]"
+          >
+            <InViewRender>{item.comp}</InViewRender>
+          </div>
+        ))}
       </div>
     </div>
   );

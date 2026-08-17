@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { DitherChartTooltipContent } from '../dither-charts/lib/recharts-tooltip';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface AreaPoint {
   time: string;
@@ -31,6 +32,7 @@ interface MonoRoundedAreaChartProps {
 
 export function MonoRoundedAreaChart({ theme = 'dark', compact = false }: MonoRoundedAreaChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
   const idPrefix = useId().replace(/:/g, '');
   const [curve, setCurve] = useState<'monotone' | 'natural'>('monotone');
 
@@ -88,7 +90,7 @@ export function MonoRoundedAreaChart({ theme = 'dark', compact = false }: MonoRo
       </div>
 
       {/* Main Recharts Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         <svg className="absolute w-0 h-0 pointer-events-none">
@@ -121,7 +123,8 @@ export function MonoRoundedAreaChart({ theme = 'dark', compact = false }: MonoRo
               strokeLinecap="round"
               strokeLinejoin="round"
               fill={`url(#${idPrefix}mono-area-gradient)`}
-              animationDuration={900}
+              isAnimationActive={!isMobile}
+              animationDuration={isMobile ? 0 : 900}
             />
           </AreaChart>
         </ResponsiveContainer>

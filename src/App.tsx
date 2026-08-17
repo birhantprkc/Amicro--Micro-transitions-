@@ -18,6 +18,7 @@ import { ThreeDPage } from './components/ThreeDPage';
 import { MapleLogo } from './components/MapleLogo';
 import { AppleSponsorShowcase } from './components/AppleSponsorShowcase';
 import { SponsorsPage } from './components/SponsorsPage';
+import { ChartDetailPage } from './components/ChartDetailPage';
 import { useWebHaptics } from './hooks/useWebHaptics';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -44,7 +45,7 @@ import { CardTimeMachine } from './components/cards/CardTimeMachine';
 
 type LayoutMode = 'list' | 'grid' | 'matrix';
 type SortMode = 'default' | 'alphabetical';
-type PageMode = 'home' | 'cli' | 'skills' | 'dither-charts' | '3d-page' | 'simple-comp' | 'mono-charts' | 'sponsors';
+type PageMode = 'home' | 'cli' | 'skills' | 'dither-charts' | '3d-page' | 'simple-comp' | 'mono-charts' | 'sponsors' | 'chart-detail';
 type CatalogTabType = 'buttons' | 'cards' | 'carousels' | 'loaders' | 'dither-charts' | 'simple-comp';
 
 interface SponsorSlot {
@@ -138,6 +139,14 @@ export default function App() {
     localStorage.setItem('amicro_sponsors', JSON.stringify(sponsors));
   }, [sponsors]);
 
+  const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
+
+  const navigateToChartDetail = (chartId: string) => {
+    setSelectedChartId(chartId);
+    setCurrentPage('chart-detail');
+    window.history.pushState(null, '', `/components/${chartId}`);
+  };
+
   // Clean Path Router (Without # hash)
   useEffect(() => {
     const handleLocationChange = () => {
@@ -151,6 +160,16 @@ export default function App() {
         window.history.replaceState(null, '', cleanPath);
       }
 
+      if (route.startsWith('components/') || route.startsWith('charts/')) {
+        const id = route.replace(/^(components|charts)\//, '');
+        if (id) {
+          setSelectedChartId(id);
+          setCurrentPage('chart-detail');
+          return;
+        }
+      }
+
+      setSelectedChartId(null);
       if (route.startsWith('cli')) {
         setCurrentPage('cli');
       } else if (route.startsWith('skills')) {
@@ -676,6 +695,25 @@ export default function App() {
               showToast={showToast}
             />
           </motion.div>
+        ) : currentPage === 'chart-detail' && selectedChartId ? (
+          <motion.div
+            key="chart-detail-page"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+          >
+            <ChartDetailPage
+              chartId={selectedChartId}
+              theme={theme}
+              showToast={showToast}
+              triggerHaptic={triggerHaptic}
+              onBack={() => {
+                setSelectedChartId(null);
+                navigateTo('mono-charts');
+              }}
+            />
+          </motion.div>
         ) : currentPage === 'mono-charts' ? (
           <motion.div
             key="mono-charts-page"
@@ -691,6 +729,7 @@ export default function App() {
               showToast={showToast}
               triggerHaptic={triggerHaptic}
               onNavigateHome={() => navigateTo('home')}
+              onSelectChart={(id) => navigateToChartDetail(id)}
             />
           </motion.div>
         ) : currentPage === 'dither-charts' || currentPage === 'simple-comp' ? (
@@ -701,7 +740,7 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <DitherChartsPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} onNavigate3D={() => navigateTo('3d-page')} />
+            <DitherChartsPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} onNavigate3D={() => navigateTo('3d-page')} onSelectChart={(id) => navigateToChartDetail(id)} />
           </motion.div>
         ) : currentPage === '3d-page' ? (
           <motion.div
@@ -1079,7 +1118,13 @@ export default function App() {
                         className={`${layout === 'list' ? 'w-full' : ''} ${layout === 'grid' ? 'w-full flex justify-center sm:w-auto sm:block' : ''}`}
                       >
                         {layout === 'grid' ? (
-                          <div className={`relative w-full max-w-[320px] sm:w-[320px] h-[220px] sm:h-[268px] rounded-[24px] transition-all duration-300 group ${theme === 'dark' ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]' : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-100/85 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] text-black'}`}>
+                          <div 
+                            onClick={() => {
+                              if (triggerHaptic) triggerHaptic('light');
+                              navigateToChartDetail(`btn-${button.id}`);
+                            }}
+                            className={`relative w-full max-w-[320px] sm:w-[320px] h-[220px] sm:h-[268px] rounded-[24px] transition-all duration-300 group cursor-pointer ${theme === 'dark' ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]' : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-100/85 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] text-black'}`}
+                          >
                             <div className={`absolute left-[12px] top-[12px] right-[12px] bottom-[68px] rounded-[14px] overflow-hidden flex items-center justify-center transition-colors duration-300 ${theme === 'dark' ? 'bg-[#131313]' : 'bg-[#f4f4f6]'}`}>
                               <div className={`absolute inset-0 rounded-[14px] pointer-events-none z-10 ${theme === 'dark' ? 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]' : 'shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)]'}`} />
                               <AnimatedButton config={button} layoutMode={layout} theme={theme} />
@@ -1089,7 +1134,10 @@ export default function App() {
                               <div className={`text-[11px] font-normal leading-[13px] transition-colors ${theme === 'dark' ? 'text-[#767676]' : 'text-black opacity-70'} capitalize`}>{button.interactionType.replace('-', ' ')} interaction</div>
                             </div>
                             <button 
-                              onClick={() => handleCopyCode(button)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyCode(button);
+                              }}
                               type="button" 
                               className={`absolute right-[20px] bottom-[12px] w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors cursor-pointer border-0 focus-visible:outline focus-visible:outline-2 ${theme === 'dark' ? 'bg-white/[0.08] hover:bg-white/[0.12] text-[#ededed]/60 hover:text-[#ededed]' : 'bg-neutral-100 hover:bg-neutral-200 text-black hover:text-black'}`} 
                               aria-label="Copy interaction code"
@@ -1125,7 +1173,11 @@ export default function App() {
                                   return (
                                     <div 
                                       key={loaderIdx} 
-                                      className={`relative group rounded-[24px] flex flex-col items-center justify-center p-6 md:p-8 transition-all duration-300 border h-64 md:h-80 w-full overflow-hidden ${
+                                      onClick={() => {
+                                        if (triggerHaptic) triggerHaptic('light');
+                                        navigateToChartDetail(loader.kebabName);
+                                      }}
+                                      className={`relative group rounded-[24px] flex flex-col items-center justify-center p-6 md:p-8 transition-all duration-300 border h-64 md:h-80 w-full overflow-hidden cursor-pointer ${
                                         theme === 'dark' 
                                           ? 'bg-[#181818] border-white/5 hover:bg-[#1f1f1f] shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]' 
                                           : 'bg-white border-neutral-100 hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
@@ -1149,7 +1201,10 @@ export default function App() {
                                         <motion.button
                                           whileHover={{ scale: 1.08 }}
                                           whileTap={{ scale: 0.92 }}
-                                          onClick={() => handleCopyLoaderCode(loader)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCopyLoaderCode(loader);
+                                          }}
                                           className={`p-2 rounded-xl transition-all cursor-pointer border flex items-center justify-center ${
                                             isCopied
                                               ? (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-100 text-emerald-600 border-emerald-300')
@@ -1180,7 +1235,11 @@ export default function App() {
                                   return (
                                     <div 
                                       key={loaderIdx} 
-                                      className={`relative group aspect-square rounded-2xl flex flex-col items-center justify-center p-4 transition-all duration-300 border ${
+                                      onClick={() => {
+                                        if (triggerHaptic) triggerHaptic('light');
+                                        navigateToChartDetail(loader.kebabName);
+                                      }}
+                                      className={`relative group aspect-square rounded-2xl flex flex-col items-center justify-center p-4 transition-all duration-300 border cursor-pointer ${
                                         theme === 'dark' 
                                           ? 'bg-[#181818] border-white/5 hover:bg-[#1f1f1f] shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]' 
                                           : 'bg-white border-neutral-100 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:border-neutral-200/50'
@@ -1202,7 +1261,10 @@ export default function App() {
                                         <motion.button
                                           whileHover={{ scale: 1.1 }}
                                           whileTap={{ scale: 0.9 }}
-                                          onClick={() => handleCopyLoaderCode(loader)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCopyLoaderCode(loader);
+                                          }}
                                           className={`p-1.5 rounded-lg transition-all cursor-pointer border flex items-center justify-center ${
                                             isCopied
                                               ? (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-100 text-emerald-600 border-emerald-300')
@@ -1242,9 +1304,13 @@ export default function App() {
                       >
                         {layout === 'grid' || layout === 'matrix' ? (
                           <div 
+                            onClick={() => {
+                              if (triggerHaptic) triggerHaptic('light');
+                              navigateToChartDetail(card.interactionType || card.id);
+                            }}
                             onMouseEnter={() => setHoveredCardId(card.id)}
                             onMouseLeave={() => setHoveredCardId(null)}
-                            className={`relative w-full max-w-[480px] sm:w-[480px] h-[300px] sm:h-[390px] rounded-[24px] transition-all duration-300 group ${hoveredCardId === card.id ? 'overflow-visible z-20' : 'overflow-hidden z-1'} ${theme === 'dark' ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]' : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-100/85 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] text-black'}`}
+                            className={`relative w-full max-w-[480px] sm:w-[480px] h-[300px] sm:h-[390px] rounded-[24px] transition-all duration-300 group cursor-pointer ${hoveredCardId === card.id ? 'overflow-visible z-20' : 'overflow-hidden z-1'} ${theme === 'dark' ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]' : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-100/85 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] text-black'}`}
                           >
                             <div className={`absolute left-[12px] top-[12px] right-[12px] h-[200px] sm:h-[290px] rounded-[14px] flex items-center justify-center ${hoveredCardId === card.id ? 'overflow-visible' : 'overflow-hidden'} transition-colors duration-300 ${theme === 'dark' ? 'bg-[#131313]' : 'bg-[#f4f4f6]'}`}>
                               <div className={`absolute inset-0 rounded-[14px] pointer-events-none z-10 ${theme === 'dark' ? 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]' : 'shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)]'}`} />
@@ -1286,7 +1352,10 @@ export default function App() {
                               </div>
                             </div>
                             <button 
-                              onClick={() => handleCopyCardCode(card)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyCardCode(card);
+                              }}
                               type="button" 
                               className={`absolute right-[20px] bottom-[14px] w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors cursor-pointer border-0 focus-visible:outline focus-visible:outline-2 ${theme === 'dark' ? 'bg-white/[0.08] hover:bg-white/[0.12] text-[#ededed]/60 hover:text-[#ededed]' : 'bg-neutral-100 hover:bg-neutral-200 text-black hover:text-black'}`} 
                               aria-label="Copy card code"

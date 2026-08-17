@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResponsiveContainer, LineChart, Line } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface SparkRow {
   name: string;
@@ -32,6 +33,7 @@ interface MonoRoundedSparklineChartProps {
 
 export function MonoRoundedSparklineChart({ theme = 'dark', compact = false }: MonoRoundedSparklineChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -61,7 +63,7 @@ export function MonoRoundedSparklineChart({ theme = 'dark', compact = false }: M
       </div>
 
       {/* Main Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-3 transition-colors duration-300 flex flex-col justify-around gap-2 ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-3 transition-colors duration-300 flex flex-col justify-around gap-2 touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         {SPARK_ROWS.map((row, idx) => (
@@ -80,7 +82,8 @@ export function MonoRoundedSparklineChart({ theme = 'dark', compact = false }: M
                     strokeWidth={2}
                     strokeLinecap="round"
                     dot={false}
-                    animationDuration={800}
+                    isAnimationActive={!isMobile}
+                    animationDuration={isMobile ? 0 : 800}
                   />
                 </LineChart>
               </ResponsiveContainer>

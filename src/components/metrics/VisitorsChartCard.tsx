@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Users } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 const data = [
   { name: 'Feb 20', m: 120, c: 45 },
@@ -39,6 +40,7 @@ const data = [
 
 export default function VisitorsChartCard() {
   const [activeTab, setActiveTab] = useState('5D');
+  const isMobile = useIsMobile();
 
   return (
     <div className="bg-white rounded-[1.5rem] p-6 max-w-2xl w-full mx-auto font-sans shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] border border-neutral-100">
@@ -89,7 +91,7 @@ export default function VisitorsChartCard() {
          </div>
       </div>
 
-      <div className="h-[240px] w-full relative">
+      <div className="h-[240px] w-full relative touch-pan-y">
          <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
@@ -107,7 +109,7 @@ export default function VisitorsChartCard() {
                   ticks={[0, 50, 100, 150, 200]}
                />
                <Tooltip 
-                  content={({ active, payload, label }) => {
+                  content={({ active, payload }) => {
                      if (active && payload && payload.length) {
                         return (
                            <div className="bg-white p-3 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-neutral-100 min-w-[140px]">
@@ -147,6 +149,8 @@ export default function VisitorsChartCard() {
                   strokeWidth={2.5}
                   dot={false}
                   activeDot={{ r: 4, fill: '#DC2626', stroke: 'white', strokeWidth: 2 }}
+                  isAnimationActive={!isMobile}
+                  animationDuration={isMobile ? 0 : 800}
                />
                <Line 
                   type="monotone" 
@@ -155,6 +159,8 @@ export default function VisitorsChartCard() {
                   strokeWidth={2.5}
                   dot={false}
                   activeDot={{ r: 4, fill: '#0284C7', stroke: 'white', strokeWidth: 2 }}
+                  isAnimationActive={!isMobile}
+                  animationDuration={isMobile ? 0 : 800}
                />
             </LineChart>
          </ResponsiveContainer>

@@ -1,0 +1,15 @@
+{
+  "name": "sample-component",
+  "type": "registry:ui",
+  "dependencies": [],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/ui/sample-component.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\nimport { cn } from \"@/lib/utils\";\n\nexport interface SampleComponentProps extends React.HTMLAttributes<HTMLDivElement> {\n  title?: string;\n  description?: string;\n}\n\nexport function SampleComponent({\n  title = \"Sample Component\",\n  description = \"A clean template component.\",\n  className,\n  ...props\n}: SampleComponentProps) {\n  return (\n    <div\n      data-slot=\"root\"\n      className={cn(\n        \"flex flex-col gap-2 rounded-2xl border border-black/10 bg-white/70 p-6 shadow-xs backdrop-blur-md dark:border-white/15 dark:bg-white/10 motion-reduce:transition-none\",\n        className\n      )}\n      {...props}\n    >\n      <h3 className=\"text-lg font-semibold text-zinc-900 dark:text-white\">\n        {title}\n      </h3>\n      <p className=\"text-sm text-zinc-600 dark:text-zinc-400\">\n        {description}\n      </p>\n    </div>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": ""
+    }
+  ]
+}

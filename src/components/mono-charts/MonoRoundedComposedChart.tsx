@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { DitherChartTooltipContent } from '../dither-charts/lib/recharts-tooltip';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface ComposedPoint {
   label: string;
@@ -31,6 +32,7 @@ interface MonoRoundedComposedChartProps {
 
 export function MonoRoundedComposedChart({ theme = 'dark', compact = false }: MonoRoundedComposedChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
   const [showLine, setShowLine] = useState<boolean>(true);
 
   const total = MONO_COMPOSED_DATA.reduce((acc, item) => acc + item.count, 0);
@@ -80,7 +82,7 @@ export function MonoRoundedComposedChart({ theme = 'dark', compact = false }: Mo
       </div>
 
       {/* Main Recharts Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         <ResponsiveContainer width="100%" height={compact ? 130 : 160}>
@@ -103,7 +105,8 @@ export function MonoRoundedComposedChart({ theme = 'dark', compact = false }: Mo
               strokeWidth={1}
               radius={[8, 8, 8, 8]}
               barSize={20}
-              animationDuration={800}
+              isAnimationActive={!isMobile}
+              animationDuration={isMobile ? 0 : 800}
             />
 
             {/* Smooth Spline Overlay */}
@@ -122,7 +125,8 @@ export function MonoRoundedComposedChart({ theme = 'dark', compact = false }: Mo
                   stroke: isDark ? '#181818' : '#FFFFFF',
                   strokeWidth: 2,
                 }}
-                animationDuration={900}
+                isAnimationActive={!isMobile}
+                animationDuration={isMobile ? 0 : 900}
               />
             )}
           </ComposedChart>

@@ -57,6 +57,7 @@ interface MonoChartsPageProps {
   showToast?: (message: string) => void;
   triggerHaptic?: (type: 'success' | 'warning' | 'error' | 'light' | 'medium' | 'heavy') => void;
   onNavigateHome?: () => void;
+  onSelectChart?: (id: string) => void;
   sponsors?: SponsorSlot[];
   checkoutUrl?: string;
 }
@@ -75,6 +76,7 @@ export function MonoChartsPage({
   showToast, 
   triggerHaptic, 
   onNavigateHome,
+  onSelectChart,
   sponsors,
   checkoutUrl 
 }: MonoChartsPageProps) {
@@ -499,7 +501,13 @@ export function MonoChartsPage({
             >
               {/* Standard Card Architecture wrapper matching amicro design system */}
               <div
-                className={`relative w-full rounded-[24px] transition-all duration-300 group flex flex-col justify-between p-4 ${
+                onClick={() => {
+                  if (onSelectChart) {
+                    triggerHaptic?.('light');
+                    onSelectChart(item.id);
+                  }
+                }}
+                className={`relative w-full rounded-[24px] transition-all duration-300 group flex flex-col justify-between p-4 cursor-pointer ${
                   isDark
                     ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]'
                     : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-neutral-100 text-black hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)]'
@@ -513,7 +521,7 @@ export function MonoChartsPage({
                 {/* Footer Action Bar */}
                 <div className="flex items-center justify-between pt-2 border-t border-white/5">
                   <div className="flex flex-col">
-                    <span className={`text-[13px] font-semibold tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
+                    <span className={`text-[13px] font-semibold tracking-tight group-hover:underline ${isDark ? 'text-white' : 'text-black'}`}>
                       {item.title}
                     </span>
                     <span className={`text-[11px] truncate max-w-[200px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
@@ -525,7 +533,10 @@ export function MonoChartsPage({
                   <motion.button
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.92 }}
-                    onClick={() => handleCopy(item.id, item.cliCommand)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy(item.id, item.cliCommand);
+                    }}
                     title="Copy CLI install command"
                     className={`p-2 rounded-xl transition-all cursor-pointer border flex items-center justify-center ${
                       copiedId === item.id

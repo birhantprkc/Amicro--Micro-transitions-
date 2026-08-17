@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, ArrowUp, ArrowDown, User } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 const data = [
   { name: 'AUG 1', value: 300 },
@@ -20,6 +21,7 @@ const data = [
 
 export default function UsersChartCard() {
   const [activeTab, setActiveTab] = useState('12d');
+  const isMobile = useIsMobile();
 
   return (
     <div className="bg-white rounded-[2rem] p-6 max-w-sm w-full mx-auto font-sans shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] border border-neutral-100">
@@ -48,7 +50,7 @@ export default function UsersChartCard() {
          </span>
       </div>
 
-      <div className="h-[120px] w-[calc(100%+2rem)] -ml-4 relative mb-6">
+      <div className="h-[120px] w-[calc(100%+2rem)] -ml-4 relative mb-6 touch-pan-y">
          <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                <defs>
@@ -79,6 +81,8 @@ export default function UsersChartCard() {
                   fillOpacity={1} 
                   fill="url(#colorValue)" 
                   activeDot={{ r: 4, fill: '#10B981', stroke: 'white', strokeWidth: 2 }}
+                  isAnimationActive={!isMobile}
+                  animationDuration={isMobile ? 0 : 800}
                />
             </AreaChart>
          </ResponsiveContainer>

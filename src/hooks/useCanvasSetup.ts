@@ -30,7 +30,11 @@ export function useCanvasSetup(): UseCanvasSetupResult {
   const isVisible = useRef(true);
 
   const [reducedMotion] = useState(
-    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    () => typeof window !== 'undefined' && (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      window.innerWidth < 768 ||
+      window.matchMedia('(max-width: 768px)').matches
+    )
   );
 
   useEffect(() => {

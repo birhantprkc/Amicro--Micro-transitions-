@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { DitherChartTooltipContent } from '../dither-charts/lib/recharts-tooltip';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface ScatterPoint {
   x: number;
@@ -34,6 +35,7 @@ interface MonoRoundedScatterChartProps {
 
 export function MonoRoundedScatterChart({ theme = 'dark', compact = false }: MonoRoundedScatterChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -63,7 +65,7 @@ export function MonoRoundedScatterChart({ theme = 'dark', compact = false }: Mon
       </div>
 
       {/* Main Recharts Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         <ResponsiveContainer width="100%" height={compact ? 130 : 160}>
@@ -83,7 +85,8 @@ export function MonoRoundedScatterChart({ theme = 'dark', compact = false }: Mon
               fill={isDark ? '#FFFFFF' : '#09090B'}
               stroke={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(9,9,11,0.5)'}
               strokeWidth={1.5}
-              animationDuration={800}
+              isAnimationActive={!isMobile}
+              animationDuration={isMobile ? 0 : 800}
             />
           </ScatterChart>
         </ResponsiveContainer>

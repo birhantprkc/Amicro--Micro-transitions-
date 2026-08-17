@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { DitherChartTooltipContent } from '../dither-charts/lib/recharts-tooltip';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface BarPoint {
   label: string;
@@ -32,6 +33,7 @@ interface MonoRoundedBarChartProps {
 
 export function MonoRoundedBarChart({ theme = 'dark', compact = false }: MonoRoundedBarChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
   const [layout, setLayout] = useState<'vertical' | 'horizontal'>('vertical');
 
   const isHorizontal = layout === 'horizontal';
@@ -88,7 +90,7 @@ export function MonoRoundedBarChart({ theme = 'dark', compact = false }: MonoRou
       </div>
 
       {/* Main Recharts Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         <ResponsiveContainer width="100%" height={compact ? 130 : 160}>
@@ -122,7 +124,8 @@ export function MonoRoundedBarChart({ theme = 'dark', compact = false }: MonoRou
               fill={isDark ? '#FFFFFF' : '#09090B'}
               radius={isHorizontal ? [0, 8, 8, 0] : [8, 8, 8, 8]}
               barSize={isHorizontal ? 12 : 16}
-              animationDuration={800}
+              isAnimationActive={!isMobile}
+              animationDuration={isMobile ? 0 : 800}
             />
 
             {/* Muted Secondary Column */}
@@ -132,7 +135,8 @@ export function MonoRoundedBarChart({ theme = 'dark', compact = false }: MonoRou
               fill={isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}
               radius={isHorizontal ? [0, 8, 8, 0] : [8, 8, 8, 8]}
               barSize={isHorizontal ? 12 : 16}
-              animationDuration={1000}
+              isAnimationActive={!isMobile}
+              animationDuration={isMobile ? 0 : 1000}
             />
           </BarChart>
         </ResponsiveContainer>

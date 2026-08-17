@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { DitherChartTooltipContent } from '../dither-charts/lib/recharts-tooltip';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface LinePoint {
   label: string;
@@ -32,6 +33,7 @@ interface MonoRoundedLineChartProps {
 
 export function MonoRoundedLineChart({ theme = 'dark', compact = false }: MonoRoundedLineChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
   const [activeSeries, setActiveSeries] = useState<'value' | 'all'>('all');
 
   const latestVal = MONO_LINE_DATA[MONO_LINE_DATA.length - 1].value;
@@ -88,7 +90,7 @@ export function MonoRoundedLineChart({ theme = 'dark', compact = false }: MonoRo
       </div>
 
       {/* Main Minimalist Recharts Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         <ResponsiveContainer width="100%" height={compact ? 130 : 160}>
@@ -122,7 +124,8 @@ export function MonoRoundedLineChart({ theme = 'dark', compact = false }: MonoRo
                 strokeLinejoin="round"
                 strokeDasharray="4 4"
                 dot={false}
-                animationDuration={900}
+                isAnimationActive={!isMobile}
+                animationDuration={isMobile ? 0 : 900}
               />
             )}
 
@@ -146,7 +149,8 @@ export function MonoRoundedLineChart({ theme = 'dark', compact = false }: MonoRo
                 stroke: isDark ? '#A1A1AA' : '#52525B',
                 strokeWidth: 2,
               }}
-              animationDuration={800}
+              isAnimationActive={!isMobile}
+              animationDuration={isMobile ? 0 : 800}
             />
           </LineChart>
         </ResponsiveContainer>

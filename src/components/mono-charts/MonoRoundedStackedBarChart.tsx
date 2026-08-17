@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { DitherChartTooltipContent } from '../dither-charts/lib/recharts-tooltip';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface StackedPoint {
   label: string;
@@ -31,6 +32,7 @@ interface MonoRoundedStackedBarChartProps {
 
 export function MonoRoundedStackedBarChart({ theme = 'dark', compact = false }: MonoRoundedStackedBarChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -60,7 +62,7 @@ export function MonoRoundedStackedBarChart({ theme = 'dark', compact = false }: 
       </div>
 
       {/* Main Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         <ResponsiveContainer width="100%" height={compact ? 130 : 160}>
@@ -69,9 +71,9 @@ export function MonoRoundedStackedBarChart({ theme = 'dark', compact = false }: 
             <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: isDark ? '#71717A' : '#A1A1AA' }} />
             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: isDark ? '#71717A' : '#A1A1AA' }} />
             <Tooltip content={<DitherChartTooltipContent theme={theme} indicator="dot" />} />
-            <Bar dataKey="layer1" name="Base" stackId="a" fill={isDark ? '#FFFFFF' : '#09090B'} radius={[0, 0, 8, 8]} barSize={18} />
-            <Bar dataKey="layer2" name="Mid" stackId="a" fill={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(9,9,11,0.5)'} />
-            <Bar dataKey="layer3" name="Top" stackId="a" fill={isDark ? 'rgba(255,255,255,0.2)' : 'rgba(9,9,11,0.2)'} radius={[8, 8, 0, 0]} />
+            <Bar dataKey="layer1" name="Base" stackId="a" fill={isDark ? '#FFFFFF' : '#09090B'} radius={[0, 0, 8, 8]} barSize={18} isAnimationActive={!isMobile} animationDuration={isMobile ? 0 : 800} />
+            <Bar dataKey="layer2" name="Mid" stackId="a" fill={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(9,9,11,0.5)'} isAnimationActive={!isMobile} animationDuration={isMobile ? 0 : 800} />
+            <Bar dataKey="layer3" name="Top" stackId="a" fill={isDark ? 'rgba(255,255,255,0.2)' : 'rgba(9,9,11,0.2)'} radius={[8, 8, 0, 0]} isAnimationActive={!isMobile} animationDuration={isMobile ? 0 : 800} />
           </BarChart>
         </ResponsiveContainer>
       </div>

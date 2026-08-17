@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { DitherChartTooltipContent } from '../dither-charts/lib/recharts-tooltip';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface DonutSegment {
   name: string;
@@ -22,6 +23,7 @@ interface MonoRoundedDonutChartProps {
 
 export function MonoRoundedDonutChart({ theme = 'dark', compact = false }: MonoRoundedDonutChartProps) {
   const isDark = theme === 'dark';
+  const isMobile = useIsMobile();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   const total = MONO_DONUT_DATA.reduce((acc, item) => acc + item.value, 0);
@@ -54,7 +56,7 @@ export function MonoRoundedDonutChart({ theme = 'dark', compact = false }: MonoR
       </div>
 
       {/* Main Recharts Stage */}
-      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 flex items-center justify-center ${
+      <div className={`relative w-full flex-1 rounded-[14px] overflow-hidden p-2 transition-colors duration-300 flex items-center justify-center touch-pan-y ${
         isDark ? 'bg-[#131313]' : 'bg-[#f4f4f6]'
       }`}>
         <ResponsiveContainer width="100%" height={compact ? 130 : 160}>
@@ -73,7 +75,8 @@ export function MonoRoundedDonutChart({ theme = 'dark', compact = false }: MonoR
               strokeLinecap="round"
               onMouseEnter={(_, idx) => setHoverIndex(idx)}
               onMouseLeave={() => setHoverIndex(null)}
-              animationDuration={900}
+              isAnimationActive={!isMobile}
+              animationDuration={isMobile ? 0 : 900}
             >
               {MONO_DONUT_DATA.map((entry, index) => {
                 const isHovered = hoverIndex === index;

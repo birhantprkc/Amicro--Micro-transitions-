@@ -25,6 +25,7 @@
   },
   "exclude": [
     "registry",
-    "temp-vibrant-dot-loader"
+    "temp-vibrant-dot-loader",
+    "template-component-page"
   ]
 }

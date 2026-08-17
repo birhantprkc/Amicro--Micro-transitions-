@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { AreaChart, Area, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 // Stable pseudo-random generator for realistic stock curves
 const generateData = (points: number, start: number, trend: number, volatility: number) => {
@@ -25,6 +26,7 @@ const generateData = (points: number, start: number, trend: number, volatility: 
 
 export default function StockChartCard() {
   const [range, setRange] = useState('1W');
+  const isMobile = useIsMobile();
 
   // Generate mock data for different time ranges
   const chartData = useMemo(() => {
@@ -70,7 +72,7 @@ export default function StockChartCard() {
       </div>
 
       {/* Interactive Plot Area */}
-      <div className="flex-1 w-[calc(100%+2rem)] -ml-4 relative z-10 min-h-[200px]">
+      <div className="flex-1 w-[calc(100%+2rem)] -ml-4 relative z-10 min-h-[200px] touch-pan-y">
          <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                <defs>
@@ -108,7 +110,8 @@ export default function StockChartCard() {
                   strokeWidth={2.5}
                   fill={`url(#${gradientId})`}
                   activeDot={{ r: 6, fill: color, stroke: '#FFFFFF', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' } }}
-                  animationDuration={600}
+                  isAnimationActive={!isMobile}
+                  animationDuration={isMobile ? 0 : 600}
                   animationEasing="ease-in-out"
                />
             </AreaChart>

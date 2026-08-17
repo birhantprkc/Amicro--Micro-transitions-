@@ -3,7 +3,7 @@ import { useInView } from 'framer-motion';
 
 export function InViewRender({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { margin: "50px" });
+  const isInView = useInView(ref, { margin: "200px", once: true });
 
   return (
     <div ref={ref} className="w-full h-full flex items-center justify-center">
