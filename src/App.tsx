@@ -182,6 +182,18 @@ export default function App() {
         setCurrentPage('3d-page');
       } else if (route.startsWith('sponsors')) {
         setCurrentPage('sponsors');
+      } else if (route.startsWith('buttons')) {
+        setCurrentPage('home');
+        setCatalogTab('buttons');
+      } else if (route.startsWith('cards') || route.startsWith('card-spreads')) {
+        setCurrentPage('home');
+        setCatalogTab('cards');
+      } else if (route.startsWith('carousels') || route.startsWith('3d-carousels')) {
+        setCurrentPage('home');
+        setCatalogTab('carousels');
+      } else if (route.startsWith('loaders')) {
+        setCurrentPage('home');
+        setCatalogTab('loaders');
       } else {
         setCurrentPage('home');
       }
@@ -389,7 +401,7 @@ export default function App() {
 
   const isLightTheme = theme === 'light';
 
-  const navigateTo = (page: PageMode) => {
+  const navigateTo = (page: PageMode, tab?: CatalogTabType) => {
     triggerHaptic('light');
     let targetPath = '/';
     if (page === 'cli') {
@@ -405,11 +417,19 @@ export default function App() {
     } else if (page === 'sponsors') {
       targetPath = '/sponsors';
     } else {
-      targetPath = '/';
+      const activeTab = tab || catalogTab;
+      if (activeTab === 'buttons') targetPath = '/buttons';
+      else if (activeTab === 'cards') targetPath = '/cards';
+      else if (activeTab === 'carousels') targetPath = '/carousels';
+      else if (activeTab === 'loaders') targetPath = '/loaders';
+      else targetPath = '/';
     }
 
     if (window.location.pathname !== targetPath || window.location.hash) {
       window.history.pushState(null, '', targetPath);
+    }
+    if (tab) {
+      setCatalogTab(tab);
     }
     setCurrentPage(page === 'simple-comp' ? 'dither-charts' : page);
     setMobileMenuOpen(false);
@@ -417,6 +437,25 @@ export default function App() {
     setMoreDropdownOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const handleTabChange = useCallback((tab: CatalogTabType) => {
+    triggerHaptic('light');
+    setCatalogTab(tab);
+
+    const routeMap: Record<CatalogTabType, string> = {
+      buttons: '/buttons',
+      cards: '/cards',
+      carousels: '/carousels',
+      loaders: '/loaders',
+      'dither-charts': '/dither-charts',
+      'simple-comp': '/dither-charts',
+    };
+
+    const targetPath = routeMap[tab] || '/';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  }, [triggerHaptic]);
 
   return (
     <div className={`relative w-full min-h-dvh flex flex-col font-sans antialiased transition-colors duration-300 ${theme === 'dark' ? 'dark bg-[#121212] text-[#ffffff] selection:bg-neutral-850' : 'bg-[#f8f9fa] text-black selection:bg-neutral-200'}`}>
@@ -442,9 +481,20 @@ export default function App() {
             </button>
             <nav className="hidden sm:flex items-center gap-[8px]">
               <button 
+                onClick={() => navigateTo('home', 'buttons')}
+                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                  currentPage === 'home' && catalogTab === 'buttons' && (window.location.pathname === '/buttons' || window.location.pathname === '/')
+                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
+                    : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
+                }`}
+              >
+                Buttons
+              </button>
+
+              <button 
                 onClick={() => navigateTo('home')}
                 className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
-                  currentPage === 'home'
+                  currentPage === 'home' && catalogTab !== 'buttons'
                     ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
                     : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
                 }`}
@@ -582,9 +632,19 @@ export default function App() {
               }`}
             >
               <button 
+                onClick={() => navigateTo('home', 'buttons')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+                  currentPage === 'home' && catalogTab === 'buttons'
+                    ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
+                    : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
+                }`}
+              >
+                Buttons
+              </button>
+              <button 
                 onClick={() => navigateTo('home')}
                 className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
-                  currentPage === 'home'
+                  currentPage === 'home' && catalogTab !== 'buttons'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
@@ -956,7 +1016,7 @@ export default function App() {
                               <button
                                 key={tab.id}
                                 onClick={() => {
-                                  setCatalogTab(tab.id as any);
+                                  handleTabChange(tab.id as any);
                                   setDropdownOpen(false);
                                 }}
                                 className={`w-full text-left px-4 py-2 rounded-xl text-[13px] font-medium cursor-pointer border-0 transition-colors ${
@@ -978,7 +1038,7 @@ export default function App() {
                   <div className={`hidden sm:flex items-center p-1.5 rounded-full border shadow-inner transition-colors duration-300 max-w-full overflow-x-visible ${theme === 'dark' ? 'bg-[#181818] border-white/5' : 'bg-neutral-200/50 border-neutral-300/30'}`}>
                     <div className="flex items-center gap-2 pr-1">
                       <button
-                        onClick={() => setCatalogTab('buttons')}
+                        onClick={() => handleTabChange('buttons')}
                         className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'buttons' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
@@ -988,7 +1048,7 @@ export default function App() {
                         Buttons
                       </button>
                       <button
-                        onClick={() => setCatalogTab('cards')}
+                        onClick={() => handleTabChange('cards')}
                         className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'cards' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
@@ -998,7 +1058,7 @@ export default function App() {
                         Card Spreads
                       </button>
                       <button
-                        onClick={() => setCatalogTab('carousels')}
+                        onClick={() => handleTabChange('carousels')}
                         className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'carousels' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
@@ -1008,7 +1068,7 @@ export default function App() {
                         3D Carousels
                       </button>
                       <button
-                        onClick={() => setCatalogTab('loaders')}
+                        onClick={() => handleTabChange('loaders')}
                         className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'loaders' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
@@ -1018,7 +1078,7 @@ export default function App() {
                         Loaders
                       </button>
                       <button
-                        onClick={() => setCatalogTab('dither-charts')}
+                        onClick={() => handleTabChange('dither-charts')}
                         className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
                           catalogTab === 'dither-charts' || catalogTab === 'simple-comp'
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
