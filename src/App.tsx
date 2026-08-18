@@ -20,6 +20,7 @@ import { AppleSponsorShowcase } from './components/AppleSponsorShowcase';
 import { SponsorsPage } from './components/SponsorsPage';
 import { ChartDetailPage } from './components/ChartDetailPage';
 import { useWebHaptics } from './hooks/useWebHaptics';
+import { getComponentEntry } from './data/componentEntries';
 import { Analytics } from '@vercel/analytics/react';
 
 // Loaders imports
@@ -141,10 +142,24 @@ export default function App() {
 
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
 
-  const navigateToChartDetail = (chartId: string) => {
+  const navigateToChartDetail = (chartId: string, customCategory?: string) => {
     setSelectedChartId(chartId);
     setCurrentPage('chart-detail');
-    window.history.pushState(null, '', `/components/${chartId}`);
+
+    const entry = getComponentEntry(chartId);
+    let catPath = customCategory || (entry ? entry.category : '');
+    if (!catPath) {
+      if (chartId.startsWith('btn-') || !isNaN(Number(chartId))) catPath = 'buttons';
+      else if (chartId.startsWith('card-') || chartId.startsWith('c')) catPath = 'cards';
+      else if (chartId.startsWith('mono-')) catPath = 'mono-charts';
+      else if (chartId.startsWith('dither-')) catPath = 'dither-charts';
+      else catPath = 'components';
+    }
+
+    const targetUrl = `/${catPath}/${chartId}`;
+    if (window.location.pathname !== targetUrl) {
+      window.history.pushState(null, '', targetUrl);
+    }
   };
 
   // Clean Path Router (Without # hash)
@@ -160,12 +175,15 @@ export default function App() {
         window.history.replaceState(null, '', cleanPath);
       }
 
-      if (route.startsWith('components/') || route.startsWith('charts/')) {
-        const id = route.replace(/^(components|charts)\//, '');
-        if (id) {
-          setSelectedChartId(id);
-          setCurrentPage('chart-detail');
-          return;
+      if (route.includes('/')) {
+        const parts = route.split('/').filter(Boolean);
+        if (parts.length >= 2) {
+          const idPart = parts.slice(1).join('/');
+          if (idPart) {
+            setSelectedChartId(idPart);
+            setCurrentPage('chart-detail');
+            return;
+          }
         }
       }
 
@@ -769,8 +787,17 @@ export default function App() {
               showToast={showToast}
               triggerHaptic={triggerHaptic}
               onBack={() => {
+                const entry = getComponentEntry(selectedChartId);
+                const cat = entry ? entry.category : catalogTab;
                 setSelectedChartId(null);
-                navigateTo('mono-charts');
+                if (cat === 'mono-charts') {
+                  navigateTo('mono-charts');
+                } else if (cat === 'dither-charts') {
+                  navigateTo('dither-charts');
+                } else {
+                  handleTabChange(cat as CatalogTabType);
+                  setCurrentPage('home');
+                }
               }}
             />
           </motion.div>
@@ -1181,7 +1208,7 @@ export default function App() {
                           <div 
                             onClick={() => {
                               if (triggerHaptic) triggerHaptic('light');
-                              navigateToChartDetail(`btn-${button.id}`);
+                              navigateToChartDetail(`btn-${button.id}`, 'buttons');
                             }}
                             className={`relative w-full max-w-[320px] sm:w-[320px] h-[220px] sm:h-[268px] rounded-[24px] transition-all duration-300 group cursor-pointer ${theme === 'dark' ? 'bg-[#181818] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-[#202020]' : 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-100/85 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] text-black'}`}
                           >
@@ -1235,7 +1262,7 @@ export default function App() {
                                       key={loaderIdx} 
                                       onClick={() => {
                                         if (triggerHaptic) triggerHaptic('light');
-                                        navigateToChartDetail(loader.kebabName);
+                                        navigateToChartDetail(loader.kebabName, 'loaders');
                                       }}
                                       className={`relative group rounded-[24px] flex flex-col items-center justify-center p-6 md:p-8 transition-all duration-300 border h-64 md:h-80 w-full overflow-hidden cursor-pointer ${
                                         theme === 'dark' 
@@ -1297,7 +1324,7 @@ export default function App() {
                                       key={loaderIdx} 
                                       onClick={() => {
                                         if (triggerHaptic) triggerHaptic('light');
-                                        navigateToChartDetail(loader.kebabName);
+                                        navigateToChartDetail(loader.kebabName, 'loaders');
                                       }}
                                       className={`relative group aspect-square rounded-2xl flex flex-col items-center justify-center p-4 transition-all duration-300 border cursor-pointer ${
                                         theme === 'dark' 
@@ -1366,7 +1393,7 @@ export default function App() {
                           <div 
                             onClick={() => {
                               if (triggerHaptic) triggerHaptic('light');
-                              navigateToChartDetail(card.interactionType || card.id);
+                              navigateToChartDetail(card.interactionType || card.id, card.category === 'carousels' ? 'carousels' : 'cards');
                             }}
                             onMouseEnter={() => setHoveredCardId(card.id)}
                             onMouseLeave={() => setHoveredCardId(null)}

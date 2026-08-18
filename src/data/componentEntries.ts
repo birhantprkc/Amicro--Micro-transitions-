@@ -25,7 +25,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'btn-1': {
     id: 'btn-1',
     name: 'Mac Slide Arrow Button',
-    href: '/components/btn-1',
+    href: '/buttons/btn-1',
     registry: 'button-slide-arrow',
     category: 'buttons',
     categoryLabel: 'Button Interaction',
@@ -45,7 +45,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'card-arc-5': {
     id: 'card-arc-5',
     name: 'Arc 5-Card Fan',
-    href: '/components/card-arc-5',
+    href: '/cards/card-arc-5',
     registry: 'card-arc-5',
     category: 'cards',
     categoryLabel: 'Card Spread Layout',
@@ -62,7 +62,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'card-carousel': {
     id: 'card-carousel',
     name: '3D Cylinder Carousel',
-    href: '/components/card-carousel',
+    href: '/carousels/card-carousel',
     registry: 'card-carousel',
     category: 'cards',
     categoryLabel: '3D Carousel',
@@ -79,7 +79,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'card-cover-flow': {
     id: 'card-cover-flow',
     name: '3D Cover Flow',
-    href: '/components/card-cover-flow',
+    href: '/carousels/card-cover-flow',
     registry: 'card-cover-flow',
     category: 'cards',
     categoryLabel: '3D Cover Flow',
@@ -98,7 +98,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'mono-rounded-line': {
     id: 'mono-rounded-line',
     name: 'Mono Rounded Spline Line',
-    href: '/components/mono-rounded-line',
+    href: '/mono-charts/mono-rounded-line',
     registry: 'mono-rounded-line',
     category: 'mono-charts',
     categoryLabel: 'Mono Chart',
@@ -115,7 +115,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'mono-rounded-bar': {
     id: 'mono-rounded-bar',
     name: 'Mono Rounded Pill Pillars',
-    href: '/components/mono-rounded-bar',
+    href: '/mono-charts/mono-rounded-bar',
     registry: 'mono-rounded-bar',
     category: 'mono-charts',
     categoryLabel: 'Mono Chart',
@@ -132,7 +132,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'mono-rounded-donut': {
     id: 'mono-rounded-donut',
     name: 'Mono Rounded Donut Ring',
-    href: '/components/mono-rounded-donut',
+    href: '/mono-charts/mono-rounded-donut',
     registry: 'mono-rounded-donut',
     category: 'mono-charts',
     categoryLabel: 'Mono Chart',
@@ -151,7 +151,7 @@ export const KNOWN_COMPONENT_ENTRIES: Record<string, ComponentItem> = {
   'dither-donut': {
     id: 'dither-donut',
     name: 'Dither Donut Chart',
-    href: '/components/dither-donut',
+    href: '/dither-charts/dither-donut',
     registry: 'dither-donut',
     category: 'dither-charts',
     categoryLabel: 'Dither Visualizer',
@@ -204,7 +204,7 @@ export function getComponentEntry(id: string): ComponentItem {
   return {
     id,
     name: name || 'Micro Component',
-    href: `/components/${id}`,
+    href: `/${category}/${id}`,
     registry: id,
     category,
     categoryLabel,
