@@ -15,6 +15,8 @@ import { DitherChartsPage, SimpleCompPage } from './components/DitherChartsPage'
 import { MonoChartsPage } from './components/MonoChartsPage';
 import { DitherChartsGrid, SimpleCompGrid } from './components/dither-charts/DitherChartsGrid';
 import { ThreeDPage } from './components/ThreeDPage';
+import { CssAnimationsPage } from './components/CssAnimationsPage';
+import { TextAnimationsPage } from './components/TextAnimationsPage';
 import { MapleLogo } from './components/MapleLogo';
 import { AppleSponsorShowcase } from './components/AppleSponsorShowcase';
 import { SponsorsPage } from './components/SponsorsPage';
@@ -46,7 +48,7 @@ import { CardTimeMachine } from './components/cards/CardTimeMachine';
 
 type LayoutMode = 'list' | 'grid' | 'matrix';
 type SortMode = 'default' | 'alphabetical';
-type PageMode = 'home' | 'cli' | 'skills' | 'dither-charts' | '3d-page' | 'simple-comp' | 'mono-charts' | 'sponsors' | 'chart-detail';
+type PageMode = 'home' | 'cli' | 'skills' | 'dither-charts' | '3d-page' | 'simple-comp' | 'mono-charts' | 'sponsors' | 'chart-detail' | 'css-animations' | 'text-animations';
 type CatalogTabType = 'buttons' | 'cards' | 'carousels' | 'loaders' | 'dither-charts' | 'simple-comp';
 
 interface SponsorSlot {
@@ -192,6 +194,8 @@ export default function App() {
         setCurrentPage('cli');
       } else if (route.startsWith('skills')) {
         setCurrentPage('skills');
+      } else if (route.startsWith('anime') || route.startsWith('css-animations') || route.startsWith('animations')) {
+        setCurrentPage('css-animations');
       } else if (route.startsWith('mono-charts')) {
         setCurrentPage('mono-charts');
       } else if (route.startsWith('dither-charts') || route.startsWith('simple-comp')) {
@@ -426,6 +430,8 @@ export default function App() {
       targetPath = '/cli';
     } else if (page === 'skills') {
       targetPath = '/skills';
+    } else if (page === 'css-animations') {
+      targetPath = '/Anime';
     } else if (page === 'dither-charts' || page === 'simple-comp') {
       targetPath = '/dither-charts';
     } else if (page === '3d-page') {
@@ -497,12 +503,12 @@ export default function App() {
                 <span>Amicro</span>
               </span>
             </button>
-            <nav className="hidden sm:flex items-center gap-[8px]">
+            <nav className="hidden sm:flex items-center gap-[4px] lg:gap-[6px]">
               <button 
                 onClick={() => navigateTo('home', 'buttons')}
-                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
                   currentPage === 'home' && catalogTab === 'buttons' && (window.location.pathname === '/buttons' || window.location.pathname === '/')
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
+                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
                     : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
                 }`}
               >
@@ -511,9 +517,9 @@ export default function App() {
 
               <button 
                 onClick={() => navigateTo('home')}
-                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
                   currentPage === 'home' && catalogTab !== 'buttons'
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
+                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
                     : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
                 }`}
               >
@@ -521,71 +527,126 @@ export default function App() {
               </button>
 
               <button 
-                onClick={() => navigateTo('cli')}
-                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
-                  currentPage === 'cli'
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
+                onClick={() => navigateTo('css-animations')}
+                className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                  currentPage === 'css-animations'
+                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
                     : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
                 }`}
               >
-                CLI Install
+                Anime
+              </button>
+
+              <button 
+                onClick={() => navigateTo('cli')}
+                className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                  currentPage === 'cli'
+                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
+                    : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
+                }`}
+              >
+                CLI
               </button>
 
               <button 
                 onClick={() => navigateTo('skills')}
-                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                className={`hidden md:inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
                   currentPage === 'skills'
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
+                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
                     : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
                 }`}
               >
                 Skills
               </button>
 
-              <button 
-                onClick={() => navigateTo('mono-charts')}
-                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
-                  currentPage === 'mono-charts'
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
-                    : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
-                }`}
-              >
-                Mono Charts
-              </button>
+              {/* More Dropdown Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setNavMoreDropdownOpen(!navMoreDropdownOpen)}
+                  className={`inline-flex items-center gap-1 h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
+                    ['text-animations', 'mono-charts', 'dither-charts', '3d-page', 'sponsors'].includes(currentPage)
+                      ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
+                      : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
+                  }`}
+                >
+                  <span>More</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${navMoreDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-              <button 
-                onClick={() => navigateTo('dither-charts')}
-                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
-                  currentPage === 'dither-charts' || currentPage === 'simple-comp'
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
-                    : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
-                }`}
-              >
-                Dither Charts
-              </button>
+                <AnimatePresence>
+                  {navMoreDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.15 }}
+                      className={`absolute left-0 top-[42px] min-w-[170px] p-1.5 rounded-2xl border shadow-xl backdrop-blur-xl z-50 flex flex-col gap-0.5 ${
+                        theme === 'dark'
+                          ? 'bg-[#18181a]/95 border-neutral-800 shadow-black/60'
+                          : 'bg-white/95 border-neutral-200 shadow-black/10'
+                      }`}
+                    >
+                      <button
+                        onClick={() => navigateTo('text-animations')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                          currentPage === 'text-animations'
+                            ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
+                            : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
+                        }`}
+                      >
+                        <span>Text Animations</span>
+                      </button>
 
-              <button 
-                onClick={() => navigateTo('3d-page')}
-                className={`inline-flex items-center justify-center h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
-                  currentPage === '3d-page'
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
-                    : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
-                }`}
-              >
-                3D Page
-              </button>
+                      <button
+                        onClick={() => navigateTo('mono-charts')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                          currentPage === 'mono-charts'
+                            ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
+                            : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
+                        }`}
+                      >
+                        <span>Mono Charts</span>
+                      </button>
 
-              <button 
-                onClick={() => navigateTo('sponsors')}
-                className={`inline-flex items-center justify-center gap-1.5 h-[36px] px-[14px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
-                  currentPage === 'sponsors'
-                    ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-black bg-neutral-200/80 font-semibold')
-                    : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
-                }`}
-              >
-                <span>Sponsors</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#E86F00] animate-pulse" />
-              </button>
+                      <button
+                        onClick={() => navigateTo('dither-charts')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                          currentPage === 'dither-charts' || currentPage === 'simple-comp'
+                            ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
+                            : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
+                        }`}
+                      >
+                        <span>Dither Charts</span>
+                      </button>
+
+                      <button
+                        onClick={() => navigateTo('3d-page')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                          currentPage === '3d-page'
+                            ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
+                            : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
+                        }`}
+                      >
+                        <span>3D Page</span>
+                      </button>
+
+                      <div className={`h-px my-1 ${theme === 'dark' ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
+
+                      <button
+                        onClick={() => navigateTo('sponsors')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                          currentPage === 'sponsors'
+                            ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
+                            : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
+                        }`}
+                      >
+                        <span>Sponsors</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#E86F00] animate-pulse" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </nav>
           </div>
           
@@ -688,6 +749,26 @@ export default function App() {
                 }`}
               >
                 Skills
+              </button>
+              <button 
+                onClick={() => navigateTo('css-animations')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+                  currentPage === 'css-animations'
+                    ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
+                    : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
+                }`}
+              >
+                Anime
+              </button>
+              <button 
+                onClick={() => navigateTo('text-animations')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+                  currentPage === 'text-animations'
+                    ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
+                    : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
+                }`}
+              >
+                Text Animations
               </button>
               <button 
                 onClick={() => navigateTo('mono-charts')}
@@ -838,6 +919,36 @@ export default function App() {
             transition={{ duration: 0.25 }}
           >
             <ThreeDPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} />
+          </motion.div>
+        ) : currentPage === 'css-animations' ? (
+          <motion.div
+            key="css-animations-page"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+          >
+            <CssAnimationsPage
+              theme={theme}
+              showToast={showToast}
+              triggerHaptic={triggerHaptic}
+              onNavigateHome={() => navigateTo('home')}
+            />
+          </motion.div>
+        ) : currentPage === 'text-animations' ? (
+          <motion.div
+            key="text-animations-page"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+          >
+            <TextAnimationsPage
+              theme={theme}
+              showToast={showToast}
+              triggerHaptic={triggerHaptic}
+              onNavigateHome={() => navigateTo('home')}
+            />
           </motion.div>
         ) : (
           <motion.div
