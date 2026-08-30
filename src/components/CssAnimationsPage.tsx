@@ -143,115 +143,115 @@ export function CssAnimationsPage({
       
       // ROW 1: CARD & RIBBON PEEL (3 VARIATIONS)
       case 'anim-card-peel':
-        return <CardStackPeel key={`cp-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`cp-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><CardStackPeel loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-bookmark-corner':
-        return <BookmarkCornerPeel key={`bmc-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`bmc-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><BookmarkCornerPeel loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-elastic-tag':
-        return <ElasticTagSnap key={`et-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`et-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><ElasticTagSnap loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 2: SPLIT GATES & SHUTTERS (3 VARIATIONS)
       case 'anim-split-gate':
-        return <SplitGateReveal key={`sg-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sg-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><SplitGateReveal loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-shutter-slide':
-        return <ShutterSlide key={`ss-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`ss-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><ShutterSlide loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-origami-envelope':
-        return <OrigamiEnvelopeUnfold key={`oe-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`oe-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><OrigamiEnvelopeUnfold loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 3: DISPENSERS & CARDS (3 VARIATIONS)
       case 'anim-card-dispenser':
-        return <SmartCardDispenser key={`cd-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`cd-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><SmartCardDispenser loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-sticky-note':
-        return <StickyNotePeel key={`sn-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sn-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><StickyNotePeel loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-receipt-tape':
-        return <ReceiptTapePrint key={`rt-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`rt-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><ReceiptTapePrint loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 4: CIRCUIT & LATTICE DRAWING (3 VARIATIONS)
       case 'anim-circuit-trace':
-        return <CircuitTraceDraw key={`ct-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`ct-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><CircuitTraceDraw loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-hex-lattice':
-        return <HexagonLatticeDraw key={`hl-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`hl-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><HexagonLatticeDraw loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-stroke-waveform':
-        return <StrokeWaveform key={`sw-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sw-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><StrokeWaveform loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 5: PRISM & MODULAR BLOCKS (3 VARIATIONS)
       case 'anim-prism-stack':
-        return <PrismBlockStack key={`ps-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`ps-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><PrismBlockStack loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-modular-tile':
-        return <ModularTileSnap key={`mt-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`mt-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><ModularTileSnap loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-pyramid-build':
-        return <PyramidBlockBuild key={`pb-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`pb-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><PyramidBlockBuild loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 6: ROLLERS & SCROLLS (3 VARIATIONS)
       case 'anim-roller-blind':
-        return <RollerBlindDrop key={`rb-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`rb-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><RollerBlindDrop loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-scroll-canvas':
-        return <ScrollCanvasUnroll key={`sc-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sc-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><ScrollCanvasUnroll loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-ribbon-banner':
-        return <RibbonBannerSlide key={`rbs-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`rbs-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><RibbonBannerSlide loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 7: ELASTICITY & MORPHING (3 VARIATIONS)
       case 'anim-tension-capsule':
-        return <KineticTensionCapsule key={`tc-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`tc-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><KineticTensionCapsule loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-droplet-squish':
-        return <DropletSquish key={`ds-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`ds-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><DropletSquish loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-segmented-link':
-        return <SegmentedLinkStretch key={`sl-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sl-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><SegmentedLinkStretch loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 8: BLINDS & IRIS SHUTTERS (3 VARIATIONS)
       case 'anim-blind-pull':
-        return <BlindPull key={`bp-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`bp-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><BlindPull loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-rotating-louvers':
-        return <RotatingLouvers key={`rl-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`rl-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><RotatingLouvers loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-iris-shutter':
-        return <GeometricIrisShutter key={`is-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`is-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><GeometricIrisShutter loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 9: BUBBLE LEVELS & METRONOMES (3 VARIATIONS)
       case 'anim-bubble-level':
-        return <PendulumBubbleLevel key={`bl-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`bl-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><PendulumBubbleLevel loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-kinetic-metronome':
-        return <KineticTickingMetronome key={`km-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`km-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><KineticTickingMetronome loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-orbital-gimbal':
-        return <NestedOrbitalGimbal key={`og-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`og-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><NestedOrbitalGimbal loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 10: HARMONIC SPRINGS (3 VARIATIONS)
       case 'anim-gelatin-wobble':
-        return <GelatinWobble key={`gw-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`gw-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><GelatinWobble loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-slinky-coil':
-        return <SlinkyCoil key={`sc-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sc-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><SlinkyCoil loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-squash-sphere':
-        return <SquashStretchSphere key={`sqs-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sqs-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><SquashStretchSphere loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 11: CASCADES & DOMINOES (3 VARIATIONS)
       case 'anim-domino-chain':
-        return <DominoChain key={`dc-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`dc-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><DominoChain loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-card-cascade':
-        return <CardDeckCascade key={`cdc-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`cdc-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><CardDeckCascade loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-gear-step':
-        return <GearToothStep key={`gs-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`gs-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><GearToothStep loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 12: MAGNETICS & COMPASS (3 VARIATIONS)
       case 'anim-magnetic-disks':
-        return <MagneticDisks key={`md-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`md-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><MagneticDisks loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-dual-magnet':
-        return <DualMagnetDipole key={`dmd-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`dmd-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><DualMagnetDipole loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-compass-deflect':
-        return <CompassNeedleDeflect key={`cnd-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`cnd-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><CompassNeedleDeflect loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 13: KINETIC SPEED & INERTIA (3 VARIATIONS) - NEW
       case 'anim-sudden-brake':
-        return <SuddenBrake key={`sb-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`sb-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><SuddenBrake loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-rolling-tumble':
-        return <RollingTumble key={`rtb-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`rtb-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><RollingTumble loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-inertia-skid':
-        return <InertiaSkidStop key={`iss-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`iss-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><InertiaSkidStop loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 14: NEON & PAGE MECHANICS (3 VARIATIONS) - NEW
       case 'anim-neon-sign':
-        return <NeonSignDraw key={`ns-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`ns-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><NeonSignDraw loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-page-turn':
-        return <PageTurnCurl key={`ptc-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`ptc-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><PageTurnCurl loop={true} trigger="hover" theme="dark" /></div>;
       case 'anim-shutter-blocks':
-        return <ShutterStepBlocks key={`ssb-${previewLoopTrigger}`} loop={true} trigger="hover" theme="dark" />;
+        return <div key={`ssb-${previewLoopTrigger}`} className="w-full h-full flex items-center justify-center"><ShutterStepBlocks loop={true} trigger="hover" theme="dark" /></div>;
 
       // ROW 15: LOADERS & SPINNERS (3 VARIATIONS)
       case 'anim-matrix-loader':

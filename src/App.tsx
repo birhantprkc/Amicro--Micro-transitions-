@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence, animate } from 'motion/react';
 import { 
   LayoutGrid, List, LayoutTemplate, ArrowDownAZ, Copy, Sun, Moon, Github, 
@@ -9,18 +9,8 @@ import {
 import { buttonsData } from './data/buttons';
 import { AnimatedButton } from './components/AnimatedButton';
 import { getComponentCode, ThemeToggleCode, getCardComponentCode } from './utils/codeGenerator';
-import { CliPage } from './components/CliPage';
-import { SkillsPage } from './components/SkillsPage';
-import { DitherChartsPage, SimpleCompPage } from './components/DitherChartsPage';
-import { MonoChartsPage } from './components/MonoChartsPage';
-import { DitherChartsGrid, SimpleCompGrid } from './components/dither-charts/DitherChartsGrid';
-import { ThreeDPage } from './components/ThreeDPage';
-import { CssAnimationsPage } from './components/CssAnimationsPage';
-import { TextAnimationsPage } from './components/TextAnimationsPage';
 import { MapleLogo } from './components/MapleLogo';
 import { AppleSponsorShowcase } from './components/AppleSponsorShowcase';
-import { SponsorsPage } from './components/SponsorsPage';
-import { ChartDetailPage } from './components/ChartDetailPage';
 import { useWebHaptics } from './hooks/useWebHaptics';
 import { getComponentEntry } from './data/componentEntries';
 import { Analytics } from '@vercel/analytics/react';
@@ -45,6 +35,18 @@ import { CardWheelFan } from './components/cards/CardWheelFan';
 import { CardCarousel } from './components/cards/CardCarousel';
 import { CardCoverFlow } from './components/cards/CardCoverFlow';
 import { CardTimeMachine } from './components/cards/CardTimeMachine';
+import { DitherChartsGrid } from './components/dither-charts/DitherChartsGrid';
+
+// Lazy load secondary subpages for optimal initial bundle performance
+const CliPage = lazy(() => import('./components/CliPage').then(m => ({ default: m.CliPage })));
+const SkillsPage = lazy(() => import('./components/SkillsPage').then(m => ({ default: m.SkillsPage })));
+const DitherChartsPage = lazy(() => import('./components/DitherChartsPage').then(m => ({ default: m.DitherChartsPage })));
+const MonoChartsPage = lazy(() => import('./components/MonoChartsPage').then(m => ({ default: m.MonoChartsPage })));
+const ThreeDPage = lazy(() => import('./components/ThreeDPage').then(m => ({ default: m.ThreeDPage })));
+const CssAnimationsPage = lazy(() => import('./components/CssAnimationsPage').then(m => ({ default: m.CssAnimationsPage })));
+const TextAnimationsPage = lazy(() => import('./components/TextAnimationsPage').then(m => ({ default: m.TextAnimationsPage })));
+const SponsorsPage = lazy(() => import('./components/SponsorsPage').then(m => ({ default: m.SponsorsPage })));
+const ChartDetailPage = lazy(() => import('./components/ChartDetailPage').then(m => ({ default: m.ChartDetailPage })));
 
 type LayoutMode = 'list' | 'grid' | 'matrix';
 type SortMode = 'default' | 'alphabetical';
@@ -68,6 +70,24 @@ const tabLabels: Record<CatalogTabType, string> = {
   'dither-charts': 'Dither Charts',
   'simple-comp': 'Dither Charts',
 };
+
+const routeMap: Record<CatalogTabType, string> = {
+  buttons: '/buttons',
+  cards: '/cards',
+  carousels: '/carousels',
+  loaders: '/loaders',
+  'dither-charts': '/dither-charts',
+  'simple-comp': '/dither-charts',
+};
+
+function LoadingFallback() {
+  return (
+    <div className="w-full min-h-[50vh] flex flex-col items-center justify-center gap-3">
+      <div className="w-7 h-7 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
+      <span className="text-xs text-neutral-500 font-medium">Loading view...</span>
+    </div>
+  );
+}
 
 function AnimatedNumber({ value }: { value: number | null }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -99,10 +119,9 @@ export default function App() {
   const [catalogTab, setCatalogTab] = useState<CatalogTabType>('buttons');
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
-  const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_kgaC0fUqnLvTlW7A7RrvGQRaHzmTKjezxWNaA19AyV4" as string; // Replace with your actual Polar Checkout Link
+  const POLAR_CHECKOUT_URL = "https://buy.polar.sh/polar_cl_kgaC0fUqnLvTlW7A7RrvGQRaHzmTKjezxWNaA19AyV4" as string;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
   const [navMoreDropdownOpen, setNavMoreDropdownOpen] = useState(false);
   const { trigger: triggerHaptic } = useWebHaptics();
 
@@ -121,17 +140,18 @@ export default function App() {
       { id: 4, companyName: 'Available Slot', description: 'Advertise your product here.', isAvailable: true },
     ];
 
-    const cached = localStorage.getItem('amicro_sponsors');
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (parsed.length > 0) {
-          // Always ensure slot 1 is Maple
-          parsed[0] = defaultSponsors[0];
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('amicro_sponsors');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.length > 0) {
+            parsed[0] = defaultSponsors[0];
+          }
+          return parsed;
+        } catch (e) {
+          console.error('Error parsing cached sponsors:', e);
         }
-        return parsed;
-      } catch (e) {
-        console.error('Error parsing cached sponsors:', e);
       }
     }
     return defaultSponsors;
@@ -144,7 +164,7 @@ export default function App() {
 
   const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
 
-  const navigateToChartDetail = (chartId: string, customCategory?: string) => {
+  const navigateToChartDetail = useCallback((chartId: string, customCategory?: string) => {
     setSelectedChartId(chartId);
     setCurrentPage('chart-detail');
 
@@ -162,7 +182,7 @@ export default function App() {
     if (window.location.pathname !== targetUrl) {
       window.history.pushState(null, '', targetUrl);
     }
-  };
+  }, []);
 
   // Clean Path Router (Without # hash)
   useEffect(() => {
@@ -172,7 +192,6 @@ export default function App() {
       const route = path || hash;
 
       if (hash) {
-        // Automatically clean up any leftover hash in the URL
         const cleanPath = hash === 'home' || hash === '' ? '/' : `/${hash}`;
         window.history.replaceState(null, '', cleanPath);
       }
@@ -204,6 +223,8 @@ export default function App() {
         setCurrentPage('3d-page');
       } else if (route.startsWith('sponsors')) {
         setCurrentPage('sponsors');
+      } else if (route.startsWith('text-animations')) {
+        setCurrentPage('text-animations');
       } else if (route.startsWith('buttons')) {
         setCurrentPage('home');
         setCatalogTab('buttons');
@@ -244,7 +265,6 @@ export default function App() {
         }
       })
       .catch(() => {
-        // Fallback fetch if GitHub API rate-limits unauthenticated client requests
         fetch('https://img.shields.io/github/stars/Subhan-code/Amicro--Micro-transitions-.json')
           .then(res => res.json())
           .then(data => {
@@ -267,14 +287,13 @@ export default function App() {
     }, 3000);
   }, []);
 
-  // Listen for Polar checkout redirect parameter to dynamically fetch and apply paid sponsor slots
+  // Listen for Polar checkout redirect parameter to dynamically apply paid sponsor slots
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paymentSuccess = params.get('payment_success');
     const checkoutId = params.get('checkout_id');
 
     if (paymentSuccess === 'true' && checkoutId) {
-      // Fetch checkout details from our Vercel serverless API
       fetch(`/api/checkout-status?checkout_id=${checkoutId}`)
         .then(async (res) => {
           if (res.ok) {
@@ -299,19 +318,14 @@ export default function App() {
               });
               showToast(`Sponsorship confirmed for ${data.companyName}!`);
             }
-          } else {
-            console.error('Failed to retrieve checkout details from API');
           }
         })
         .catch(err => console.error('Error fetching checkout status:', err))
         .finally(() => {
-          // Clean up URL parameters from browser bar
           window.history.replaceState({}, document.title, window.location.pathname);
         });
     }
   }, [showToast]);
-
-
 
   const handleCopyCode = useCallback((button: typeof buttonsData[0]) => {
     const code = getComponentCode(button);
@@ -377,19 +391,6 @@ export default function App() {
       });
   }, [showToast, triggerHaptic]);
 
-  const copyCliCommand = useCallback((text: string, id: string) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        triggerHaptic('light');
-        setCopiedText(id);
-        setTimeout(() => setCopiedText(null), 2000);
-      })
-      .catch(() => {
-        triggerHaptic('error');
-        showToast("Failed to copy command.");
-      });
-  }, [showToast, triggerHaptic]);
-
   const handleThemeToggle = useCallback(() => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
@@ -421,9 +422,7 @@ export default function App() {
     return filtered;
   }, [catalogTab, sortBy]);
 
-  const isLightTheme = theme === 'light';
-
-  const navigateTo = (page: PageMode, tab?: CatalogTabType) => {
+  const navigateTo = useCallback((page: PageMode, tab?: CatalogTabType) => {
     triggerHaptic('light');
     let targetPath = '/';
     if (page === 'cli') {
@@ -432,6 +431,8 @@ export default function App() {
       targetPath = '/skills';
     } else if (page === 'css-animations') {
       targetPath = '/Anime';
+    } else if (page === 'text-animations') {
+      targetPath = '/text-animations';
     } else if (page === 'dither-charts' || page === 'simple-comp') {
       targetPath = '/dither-charts';
     } else if (page === '3d-page') {
@@ -442,11 +443,7 @@ export default function App() {
       targetPath = '/sponsors';
     } else {
       const activeTab = tab || catalogTab;
-      if (activeTab === 'buttons') targetPath = '/buttons';
-      else if (activeTab === 'cards') targetPath = '/cards';
-      else if (activeTab === 'carousels') targetPath = '/carousels';
-      else if (activeTab === 'loaders') targetPath = '/loaders';
-      else targetPath = '/';
+      targetPath = routeMap[activeTab] || '/';
     }
 
     if (window.location.pathname !== targetPath || window.location.hash) {
@@ -458,28 +455,36 @@ export default function App() {
     setCurrentPage(page === 'simple-comp' ? 'dither-charts' : page);
     setMobileMenuOpen(false);
     setNavMoreDropdownOpen(false);
-    setMoreDropdownOpen(false);
+    setDropdownOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [catalogTab, triggerHaptic]);
 
   const handleTabChange = useCallback((tab: CatalogTabType) => {
     triggerHaptic('light');
     setCatalogTab(tab);
-
-    const routeMap: Record<CatalogTabType, string> = {
-      buttons: '/buttons',
-      cards: '/cards',
-      carousels: '/carousels',
-      loaders: '/loaders',
-      'dither-charts': '/dither-charts',
-      'simple-comp': '/dither-charts',
-    };
-
     const targetPath = routeMap[tab] || '/';
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
     }
   }, [triggerHaptic]);
+
+  const handleLinkClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, page: PageMode, tab?: CatalogTabType) => {
+    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+      e.preventDefault();
+      navigateTo(page, tab);
+    }
+  }, [navigateTo]);
+
+  const handleTabLinkClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, tab: CatalogTabType) => {
+    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+      e.preventDefault();
+      if (currentPage !== 'home') {
+        navigateTo('home', tab);
+      } else {
+        handleTabChange(tab);
+      }
+    }
+  }, [currentPage, handleTabChange, navigateTo]);
 
   return (
     <div className={`relative w-full min-h-dvh flex flex-col font-sans antialiased transition-colors duration-300 ${theme === 'dark' ? 'dark bg-[#121212] text-[#ffffff] selection:bg-neutral-850' : 'bg-[#f8f9fa] text-black selection:bg-neutral-200'}`}>
@@ -488,12 +493,12 @@ export default function App() {
       <header className="relative z-50 w-full pt-4 pb-4 px-6 border-b border-transparent">
         <div className="relative z-[3] flex items-center justify-between gap-4 max-w-[1240px] mx-auto">
           <div className="flex items-center gap-[34px] min-w-0">
-            <button 
-              onClick={() => navigateTo('home')}
+            <a 
+              href="/"
+              onClick={(e) => handleLinkClick(e, 'home')}
               className={`inline-flex items-center gap-[4px] h-[35px] py-[5px] no-underline shrink-0 group transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.02] cursor-pointer text-left border-0 bg-transparent ${theme === 'dark' ? 'text-white' : 'text-black'}`}
             >
               <span className={`inline-flex items-center justify-center w-[24px] h-[24px] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] origin-center group-hover:rotate-[60deg] ${theme === 'dark' ? 'text-[#ededed]' : 'text-black'}`}>
-                {/* Modern double chevron logo */}
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[20px] h-[20px] block">
                   <path d="M7 6L14 12L7 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-40" />
                   <path d="M13 6L20 12L13 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -502,21 +507,24 @@ export default function App() {
               <span className="text-[16px] font-bold leading-none tracking-[-0.019em] ml-1">
                 <span>Amicro</span>
               </span>
-            </button>
+            </a>
+            
             <nav className="hidden sm:flex items-center gap-[4px] lg:gap-[6px]">
-              <button 
-                onClick={() => navigateTo('home', 'buttons')}
+              <a 
+                href="/buttons"
+                onClick={(e) => handleLinkClick(e, 'home', 'buttons')}
                 className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
-                  currentPage === 'home' && catalogTab === 'buttons' && (window.location.pathname === '/buttons' || window.location.pathname === '/')
+                  currentPage === 'home' && catalogTab === 'buttons'
                     ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
                     : (theme === 'dark' ? 'text-[rgba(202,202,202,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]' : 'text-neutral-600 hover:text-black hover:bg-neutral-200/40')
                 }`}
               >
                 Buttons
-              </button>
+              </a>
 
-              <button 
-                onClick={() => navigateTo('home')}
+              <a 
+                href="/cards"
+                onClick={(e) => handleLinkClick(e, 'home', 'cards')}
                 className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
                   currentPage === 'home' && catalogTab !== 'buttons'
                     ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
@@ -524,10 +532,11 @@ export default function App() {
                 }`}
               >
                 Components
-              </button>
+              </a>
 
-              <button 
-                onClick={() => navigateTo('css-animations')}
+              <a 
+                href="/Anime"
+                onClick={(e) => handleLinkClick(e, 'css-animations')}
                 className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
                   currentPage === 'css-animations'
                     ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
@@ -535,10 +544,11 @@ export default function App() {
                 }`}
               >
                 Anime
-              </button>
+              </a>
 
-              <button 
-                onClick={() => navigateTo('cli')}
+              <a 
+                href="/cli"
+                onClick={(e) => handleLinkClick(e, 'cli')}
                 className={`inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
                   currentPage === 'cli'
                     ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
@@ -546,10 +556,11 @@ export default function App() {
                 }`}
               >
                 CLI
-              </button>
+              </a>
 
-              <button 
-                onClick={() => navigateTo('skills')}
+              <a 
+                href="/skills"
+                onClick={(e) => handleLinkClick(e, 'skills')}
                 className={`hidden md:inline-flex items-center justify-center h-[34px] px-[12px] rounded-full text-[13px] font-medium leading-[16px] cursor-pointer no-underline whitespace-nowrap transition-all duration-200 border-0 ${
                   currentPage === 'skills'
                     ? (theme === 'dark' ? 'text-white bg-[rgba(255,255,255,0.08)] font-semibold' : 'text-black bg-neutral-200/80 font-semibold')
@@ -557,7 +568,7 @@ export default function App() {
                 }`}
               >
                 Skills
-              </button>
+              </a>
 
               {/* More Dropdown Menu */}
               <div className="relative">
@@ -586,55 +597,60 @@ export default function App() {
                           : 'bg-white/95 border-neutral-200 shadow-black/10'
                       }`}
                     >
-                      <button
-                        onClick={() => navigateTo('text-animations')}
-                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                      <a
+                        href="/text-animations"
+                        onClick={(e) => handleLinkClick(e, 'text-animations')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left no-underline ${
                           currentPage === 'text-animations'
                             ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
                             : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
                         }`}
                       >
                         <span>Text Animations</span>
-                      </button>
+                      </a>
 
-                      <button
-                        onClick={() => navigateTo('mono-charts')}
-                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                      <a
+                        href="/mono-charts"
+                        onClick={(e) => handleLinkClick(e, 'mono-charts')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left no-underline ${
                           currentPage === 'mono-charts'
                             ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
                             : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
                         }`}
                       >
                         <span>Mono Charts</span>
-                      </button>
+                      </a>
 
-                      <button
-                        onClick={() => navigateTo('dither-charts')}
-                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                      <a
+                        href="/dither-charts"
+                        onClick={(e) => handleLinkClick(e, 'dither-charts')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left no-underline ${
                           currentPage === 'dither-charts' || currentPage === 'simple-comp'
                             ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
                             : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
                         }`}
                       >
                         <span>Dither Charts</span>
-                      </button>
+                      </a>
 
-                      <button
-                        onClick={() => navigateTo('3d-page')}
-                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                      <a
+                        href="/3d"
+                        onClick={(e) => handleLinkClick(e, '3d-page')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left no-underline ${
                           currentPage === '3d-page'
                             ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
                             : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
                         }`}
                       >
                         <span>3D Page</span>
-                      </button>
+                      </a>
 
                       <div className={`h-px my-1 ${theme === 'dark' ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
 
-                      <button
-                        onClick={() => navigateTo('sponsors')}
-                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left ${
+                      <a
+                        href="/sponsors"
+                        onClick={(e) => handleLinkClick(e, 'sponsors')}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition cursor-pointer border-0 text-left no-underline ${
                           currentPage === 'sponsors'
                             ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
                             : (theme === 'dark' ? 'text-neutral-300 hover:bg-white/5 hover:text-white' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black')
@@ -642,7 +658,7 @@ export default function App() {
                       >
                         <span>Sponsors</span>
                         <span className="w-1.5 h-1.5 rounded-full bg-[#E86F00] animate-pulse" />
-                      </button>
+                      </a>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -650,7 +666,7 @@ export default function App() {
             </nav>
           </div>
           
-          {/* Navbar Actions with Theme Toggle at the far right corner */}
+          {/* Navbar Actions with Theme Toggle */}
           <div className="flex items-center gap-[8px]">
             <a 
               href="https://github.com/Subhan-code/Amicro--Micro-transitions-" 
@@ -676,7 +692,7 @@ export default function App() {
               </svg>
             </a>
 
-            {/* Theme Toggle Button on the absolute right corner */}
+            {/* Theme Toggle Button */}
             <button
               onClick={handleThemeToggle}
               className={`inline-flex items-center justify-center w-[36px] h-[36px] rounded-full transition-colors duration-150 cursor-pointer ${theme === 'dark' ? 'bg-[rgba(255,255,255,0.07)] hover:bg-[rgba(255,255,255,0.1)] text-[rgba(237,237,237,0.6)] hover:text-[#ededed]' : 'bg-neutral-200/80 hover:bg-neutral-300/80 text-black hover:text-black'}`}
@@ -710,99 +726,109 @@ export default function App() {
                   : 'bg-white/95 border-neutral-200 text-black'
               }`}
             >
-              <button 
-                onClick={() => navigateTo('home', 'buttons')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              <a 
+                href="/buttons"
+                onClick={(e) => handleLinkClick(e, 'home', 'buttons')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'home' && catalogTab === 'buttons'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 Buttons
-              </button>
-              <button 
-                onClick={() => navigateTo('home')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/cards"
+                onClick={(e) => handleLinkClick(e, 'home', 'cards')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'home' && catalogTab !== 'buttons'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 Components
-              </button>
-              <button 
-                onClick={() => navigateTo('cli')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/cli"
+                onClick={(e) => handleLinkClick(e, 'cli')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'cli'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 CLI Install
-              </button>
-              <button 
-                onClick={() => navigateTo('skills')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/skills"
+                onClick={(e) => handleLinkClick(e, 'skills')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'skills'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 Skills
-              </button>
-              <button 
-                onClick={() => navigateTo('css-animations')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/Anime"
+                onClick={(e) => handleLinkClick(e, 'css-animations')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'css-animations'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 Anime
-              </button>
-              <button 
-                onClick={() => navigateTo('text-animations')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/text-animations"
+                onClick={(e) => handleLinkClick(e, 'text-animations')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'text-animations'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 Text Animations
-              </button>
-              <button 
-                onClick={() => navigateTo('mono-charts')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/mono-charts"
+                onClick={(e) => handleLinkClick(e, 'mono-charts')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'mono-charts'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 Mono Charts
-              </button>
-              <button 
-                onClick={() => navigateTo('dither-charts')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/dither-charts"
+                onClick={(e) => handleLinkClick(e, 'dither-charts')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'dither-charts' || currentPage === 'simple-comp'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 Dither Charts
-              </button>
-              <button 
-                onClick={() => navigateTo('3d-page')}
-                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/3d"
+                onClick={(e) => handleLinkClick(e, '3d-page')}
+                className={`flex items-center justify-start h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === '3d-page'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
                 }`}
               >
                 3D Page
-              </button>
-              <button 
-                onClick={() => navigateTo('sponsors')}
-                className={`flex items-center justify-between h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent ${
+              </a>
+              <a 
+                href="/sponsors"
+                onClick={(e) => handleLinkClick(e, 'sponsors')}
+                className={`flex items-center justify-between h-[40px] px-4 rounded-xl text-[14px] font-semibold cursor-pointer border-0 text-left bg-transparent no-underline ${
                   currentPage === 'sponsors'
                     ? (theme === 'dark' ? 'text-white bg-white/10' : 'text-black bg-neutral-100 font-bold')
                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')
@@ -810,13 +836,13 @@ export default function App() {
               >
                 <span>Sponsors</span>
                 <span className="w-2 h-2 rounded-full bg-[#E86F00]" />
-              </button>
+              </a>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
 
-      {/* Render CliPage component or HomePage */}
+      {/* Render subpages or HomePage */}
       <AnimatePresence mode="wait">
         {currentPage === 'cli' ? (
           <motion.div
@@ -826,7 +852,9 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <CliPage theme={theme} onNavigateHome={() => navigateTo('home')} />
+            <Suspense fallback={<LoadingFallback />}>
+              <CliPage theme={theme} onNavigateHome={() => navigateTo('home')} />
+            </Suspense>
           </motion.div>
         ) : currentPage === 'skills' ? (
           <motion.div
@@ -836,7 +864,9 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <SkillsPage theme={theme} onNavigateHome={() => navigateTo('home')} />
+            <Suspense fallback={<LoadingFallback />}>
+              <SkillsPage theme={theme} onNavigateHome={() => navigateTo('home')} />
+            </Suspense>
           </motion.div>
         ) : currentPage === 'sponsors' ? (
           <motion.div
@@ -846,13 +876,15 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <SponsorsPage
-              theme={theme}
-              sponsors={sponsors}
-              checkoutUrl={POLAR_CHECKOUT_URL}
-              onNavigateHome={() => navigateTo('home')}
-              showToast={showToast}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <SponsorsPage
+                theme={theme}
+                sponsors={sponsors}
+                checkoutUrl={POLAR_CHECKOUT_URL}
+                onNavigateHome={() => navigateTo('home')}
+                showToast={showToast}
+              />
+            </Suspense>
           </motion.div>
         ) : currentPage === 'chart-detail' && selectedChartId ? (
           <motion.div
@@ -862,25 +894,27 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <ChartDetailPage
-              chartId={selectedChartId}
-              theme={theme}
-              showToast={showToast}
-              triggerHaptic={triggerHaptic}
-              onBack={() => {
-                const entry = getComponentEntry(selectedChartId);
-                const cat = entry ? entry.category : catalogTab;
-                setSelectedChartId(null);
-                if (cat === 'mono-charts') {
-                  navigateTo('mono-charts');
-                } else if (cat === 'dither-charts') {
-                  navigateTo('dither-charts');
-                } else {
-                  handleTabChange(cat as CatalogTabType);
-                  setCurrentPage('home');
-                }
-              }}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <ChartDetailPage
+                chartId={selectedChartId}
+                theme={theme}
+                showToast={showToast}
+                triggerHaptic={triggerHaptic}
+                onBack={() => {
+                  const entry = getComponentEntry(selectedChartId);
+                  const cat = entry ? entry.category : catalogTab;
+                  setSelectedChartId(null);
+                  if (cat === 'mono-charts') {
+                    navigateTo('mono-charts');
+                  } else if (cat === 'dither-charts') {
+                    navigateTo('dither-charts');
+                  } else {
+                    handleTabChange(cat as CatalogTabType);
+                    setCurrentPage('home');
+                  }
+                }}
+              />
+            </Suspense>
           </motion.div>
         ) : currentPage === 'mono-charts' ? (
           <motion.div
@@ -890,15 +924,17 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <MonoChartsPage
-              theme={theme}
-              sponsors={sponsors}
-              checkoutUrl={POLAR_CHECKOUT_URL}
-              showToast={showToast}
-              triggerHaptic={triggerHaptic}
-              onNavigateHome={() => navigateTo('home')}
-              onSelectChart={(id) => navigateToChartDetail(id)}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <MonoChartsPage
+                theme={theme}
+                sponsors={sponsors}
+                checkoutUrl={POLAR_CHECKOUT_URL}
+                showToast={showToast}
+                triggerHaptic={triggerHaptic}
+                onNavigateHome={() => navigateTo('home')}
+                onSelectChart={(id) => navigateToChartDetail(id)}
+              />
+            </Suspense>
           </motion.div>
         ) : currentPage === 'dither-charts' || currentPage === 'simple-comp' ? (
           <motion.div
@@ -908,7 +944,16 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <DitherChartsPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} onNavigate3D={() => navigateTo('3d-page')} onSelectChart={(id) => navigateToChartDetail(id)} />
+            <Suspense fallback={<LoadingFallback />}>
+              <DitherChartsPage 
+                theme={theme} 
+                showToast={showToast} 
+                triggerHaptic={triggerHaptic} 
+                onNavigateHome={() => navigateTo('home')} 
+                onNavigate3D={() => navigateTo('3d-page')} 
+                onSelectChart={(id) => navigateToChartDetail(id)} 
+              />
+            </Suspense>
           </motion.div>
         ) : currentPage === '3d-page' ? (
           <motion.div
@@ -918,7 +963,9 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <ThreeDPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} />
+            <Suspense fallback={<LoadingFallback />}>
+              <ThreeDPage theme={theme} showToast={showToast} triggerHaptic={triggerHaptic} onNavigateHome={() => navigateTo('home')} />
+            </Suspense>
           </motion.div>
         ) : currentPage === 'css-animations' ? (
           <motion.div
@@ -928,12 +975,14 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <CssAnimationsPage
-              theme={theme}
-              showToast={showToast}
-              triggerHaptic={triggerHaptic}
-              onNavigateHome={() => navigateTo('home')}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <CssAnimationsPage
+                theme={theme}
+                showToast={showToast}
+                triggerHaptic={triggerHaptic}
+                onNavigateHome={() => navigateTo('home')}
+              />
+            </Suspense>
           </motion.div>
         ) : currentPage === 'text-animations' ? (
           <motion.div
@@ -943,12 +992,14 @@ export default function App() {
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
-            <TextAnimationsPage
-              theme={theme}
-              showToast={showToast}
-              triggerHaptic={triggerHaptic}
-              onNavigateHome={() => navigateTo('home')}
-            />
+            <Suspense fallback={<LoadingFallback />}>
+              <TextAnimationsPage
+                theme={theme}
+                showToast={showToast}
+                triggerHaptic={triggerHaptic}
+                onNavigateHome={() => navigateTo('home')}
+              />
+            </Suspense>
           </motion.div>
         ) : (
           <motion.div
@@ -1004,6 +1055,7 @@ export default function App() {
                       </span>
                     )}
                   </motion.a>
+                  
                   <motion.button 
                     onClick={() => {
                       const element = document.getElementById('component-grid');
@@ -1049,6 +1101,7 @@ export default function App() {
                             key={slot.id}
                             href={slot.siteUrl}
                             target="_blank"
+                            rel="noopener noreferrer"
                             onClick={() => triggerHaptic('light')}
                             className={`group relative flex flex-col items-center justify-center text-center p-3 sm:p-3.5 min-h-[78px] rounded-xl border transition-all duration-300 hover:scale-[1.02] ${
                               isMaple
@@ -1074,8 +1127,8 @@ export default function App() {
                               )}
                               <p className={`text-[10.5px] sm:text-[11px] leading-[14px] sm:leading-[15px] mt-1 font-medium line-clamp-2 w-full px-0.5 transition-colors ${
                                 isMaple
-                                  ? (theme === 'dark' ? 'text-orange-200/80 group-hover:text-orange-100' : 'text-[#9A3412] group-hover:text-[#7C2D12]')
-                                  : (theme === 'dark' ? 'text-neutral-400 group-hover:text-neutral-300' : 'text-neutral-600 group-hover:text-neutral-800')
+                                    ? (theme === 'dark' ? 'text-orange-200/80 group-hover:text-orange-100' : 'text-[#9A3412] group-hover:text-[#7C2D12]')
+                                    : (theme === 'dark' ? 'text-neutral-400 group-hover:text-neutral-300' : 'text-neutral-600 group-hover:text-neutral-800')
                               }`} title={slot.description}>
                                 {slot.description}
                               </p>
@@ -1110,7 +1163,8 @@ export default function App() {
                 </div>
 
                 {/* Filter and layout controls */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12 w-full max-w-xl mx-auto px-4 sm:px-0">                  {/* Category Switcher: Dropdown on Mobile, Pills on Desktop */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12 w-full max-w-xl mx-auto px-4 sm:px-0">
+                  {/* Category Switcher: Dropdown on Mobile */}
                   <div className="relative block sm:hidden w-full max-w-[260px] mx-auto z-40">
                     <button
                       onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -1145,26 +1199,27 @@ export default function App() {
                             }`}
                           >
                             {[
-                              { id: 'buttons', label: 'Buttons' },
-                              { id: 'cards', label: 'Card Spreads' },
-                              { id: 'carousels', label: '3D Carousels' },
-                              { id: 'loaders', label: 'Loaders' },
-                              { id: 'dither-charts', label: 'Dither Charts' }
+                              { id: 'buttons', label: 'Buttons', href: '/buttons' },
+                              { id: 'cards', label: 'Card Spreads', href: '/cards' },
+                              { id: 'carousels', label: '3D Carousels', href: '/carousels' },
+                              { id: 'loaders', label: 'Loaders', href: '/loaders' },
+                              { id: 'dither-charts', label: 'Dither Charts', href: '/dither-charts' }
                             ].map((tab) => (
-                              <button
+                              <a
                                 key={tab.id}
-                                onClick={() => {
-                                  handleTabChange(tab.id as any);
+                                href={tab.href}
+                                onClick={(e) => {
+                                  handleTabLinkClick(e, tab.id as CatalogTabType);
                                   setDropdownOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-2 rounded-xl text-[13px] font-medium cursor-pointer border-0 transition-colors ${
+                                className={`w-full text-left px-4 py-2 rounded-xl text-[13px] font-medium cursor-pointer border-0 transition-colors no-underline block ${
                                   catalogTab === tab.id
                                     ? (theme === 'dark' ? 'bg-white/10 text-white font-semibold' : 'bg-neutral-100 text-black font-semibold')
                                     : (theme === 'dark' ? 'text-neutral-400 hover:text-white hover:bg-white/[0.04]' : 'text-neutral-600 hover:text-black hover:bg-neutral-50')
                                 }`}
                               >
                                 {tab.label}
-                              </button>
+                              </a>
                             ))}
                           </motion.div>
                         </>
@@ -1175,60 +1230,65 @@ export default function App() {
                   {/* Desktop Category Switcher (Pills) */}
                   <div className={`hidden sm:flex items-center p-1.5 rounded-full border shadow-inner transition-colors duration-300 max-w-full overflow-x-visible ${theme === 'dark' ? 'bg-[#181818] border-white/5' : 'bg-neutral-200/50 border-neutral-300/30'}`}>
                     <div className="flex items-center gap-2 pr-1">
-                      <button
-                        onClick={() => handleTabChange('buttons')}
-                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                      <a
+                        href="/buttons"
+                        onClick={(e) => handleTabLinkClick(e, 'buttons')}
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap no-underline ${
                           catalogTab === 'buttons' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
                         }`}
                       >
                         Buttons
-                      </button>
-                      <button
-                        onClick={() => handleTabChange('cards')}
-                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                      </a>
+                      <a
+                        href="/cards"
+                        onClick={(e) => handleTabLinkClick(e, 'cards')}
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap no-underline ${
                           catalogTab === 'cards' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
                         }`}
                       >
                         Card Spreads
-                      </button>
-                      <button
-                        onClick={() => handleTabChange('carousels')}
-                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                      </a>
+                      <a
+                        href="/carousels"
+                        onClick={(e) => handleTabLinkClick(e, 'carousels')}
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap no-underline ${
                           catalogTab === 'carousels' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
                         }`}
                       >
                         3D Carousels
-                      </button>
-                      <button
-                        onClick={() => handleTabChange('loaders')}
-                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                      </a>
+                      <a
+                        href="/loaders"
+                        onClick={(e) => handleTabLinkClick(e, 'loaders')}
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap no-underline ${
                           catalogTab === 'loaders' 
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
                         }`}
                       >
                         Loaders
-                      </button>
-                      <button
-                        onClick={() => handleTabChange('dither-charts')}
-                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap ${
+                      </a>
+                      <a
+                        href="/dither-charts"
+                        onClick={(e) => handleTabLinkClick(e, 'dither-charts')}
+                        className={`flex-none flex items-center justify-center h-[36px] px-4.5 sm:px-5 rounded-full text-[13px] font-medium leading-none transition-colors cursor-pointer border-0 whitespace-nowrap no-underline ${
                           catalogTab === 'dither-charts' || catalogTab === 'simple-comp'
                             ? (theme === 'dark' ? 'bg-[#2a2a2a] text-white' : 'bg-white text-black shadow-sm') 
                             : `${theme === 'dark' ? 'text-[#767676] hover:text-white' : 'text-black opacity-70 hover:opacity-100'}`
                         }`}
                       >
                         Dither Charts
-                      </button>
+                      </a>
                     </div>
                   </div>
 
-                  {/* Secondary controls row on mobile */}
+                  {/* Secondary controls row */}
                   {catalogTab !== 'loaders' && (
                     <div className="flex items-center justify-center gap-3 shrink-0">
                       {/* Sort */}
@@ -1328,7 +1388,18 @@ export default function App() {
                               <AnimatedButton config={button} layoutMode={layout} theme={theme} />
                             </div>
                             <div className="absolute left-[20px] bottom-[14px] w-[calc(100%-80px)] flex flex-col gap-[2px]">
-                              <div className={`text-[13px] font-semibold leading-[18px] transition-colors ${theme === 'dark' ? 'text-[#ededed]' : 'text-black'}`}>{button.label}</div>
+                              <a 
+                                href={`/buttons/btn-${button.id}`}
+                                onClick={(e) => {
+                                  if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                                    e.preventDefault();
+                                    navigateToChartDetail(`btn-${button.id}`, 'buttons');
+                                  }
+                                }}
+                                className={`text-[13px] font-semibold leading-[18px] transition-colors no-underline ${theme === 'dark' ? 'text-[#ededed] hover:text-white' : 'text-black hover:text-neutral-700'}`}
+                              >
+                                {button.label}
+                              </a>
                               <div className={`text-[11px] font-normal leading-[13px] transition-colors ${theme === 'dark' ? 'text-[#767676]' : 'text-black opacity-70'} capitalize`}>{button.interactionType.replace('-', ' ')} interaction</div>
                             </div>
                             <button 
@@ -1381,14 +1452,12 @@ export default function App() {
                                           : 'bg-white border-neutral-100 hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
                                       }`}
                                     >
-                                      {/* Container for Loader Component */}
                                       <div className="flex-1 flex items-center justify-center w-full">
                                         <InViewRender>
                                           <LoaderComponent theme={theme} />
                                         </InViewRender>
                                       </div>
 
-                                      {/* Details row at the bottom of full-width card */}
                                       <div className="w-full flex items-center justify-between mt-4 px-2">
                                         <span className={`text-[13px] font-semibold transition-colors ${
                                           theme === 'dark' ? 'text-neutral-350' : 'text-neutral-700'
@@ -1530,9 +1599,18 @@ export default function App() {
                             </div>
                             <div className="absolute left-[20px] bottom-[12px] right-[65px] flex flex-col justify-end gap-[3px]">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <div className={`text-[13px] font-semibold leading-[18px] transition-colors ${theme === 'dark' ? 'text-[#ededed]' : 'text-black'}`}>
+                                <a 
+                                  href={`/${card.category === 'carousels' ? 'carousels' : 'cards'}/${card.interactionType || card.id}`}
+                                  onClick={(e) => {
+                                    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                                      e.preventDefault();
+                                      navigateToChartDetail(card.interactionType || card.id, card.category === 'carousels' ? 'carousels' : 'cards');
+                                    }
+                                  }}
+                                  className={`text-[13px] font-semibold leading-[18px] transition-colors no-underline ${theme === 'dark' ? 'text-[#ededed] hover:text-white' : 'text-black hover:text-neutral-700'}`}
+                                >
                                   {card.label}
-                                </div>
+                                </a>
                                 {card.inspiration && (
                                   <a
                                     href={card.inspiration.url}
@@ -1569,7 +1647,18 @@ export default function App() {
                                 <LayoutTemplate className="w-5 h-5 text-neutral-400" />
                               </div>
                               <div>
-                                <div className="text-[14px] font-semibold">{card.label}</div>
+                                <a 
+                                  href={`/${card.category === 'carousels' ? 'carousels' : 'cards'}/${card.interactionType || card.id}`}
+                                  onClick={(e) => {
+                                    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                                      e.preventDefault();
+                                      navigateToChartDetail(card.interactionType || card.id, card.category === 'carousels' ? 'carousels' : 'cards');
+                                    }
+                                  }}
+                                  className={`text-[14px] font-semibold no-underline ${theme === 'dark' ? 'text-white' : 'text-black'}`}
+                                >
+                                  {card.label}
+                                </a>
                                 <div className={`text-[11px] ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'}`}>{card.description}</div>
                               </div>
                             </div>
@@ -1586,12 +1675,9 @@ export default function App() {
                   )}
                 </AnimatePresence>
               </div>
-
-
-
             </div>
 
-            {/* Recommended course CTA */}
+            {/* Recommended Course / Partner Section */}
             <aside className="relative z-10 w-full max-w-[720px] mx-auto mt-[20px] mb-[70px] flex items-start sm:items-center gap-2.5 sm:gap-[24px] px-6 sm:px-0">
               <span className={`w-[2px] h-[78px] rounded-[1px] shrink-0 transition-colors ${theme === 'dark' ? 'bg-white/[0.14]' : 'bg-neutral-300'}`} aria-hidden="true" />
               <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-[24px]">
@@ -1621,11 +1707,31 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <footer className="relative z-10 w-full text-center pb-[24px] text-[13px] leading-[14px]">
-        <span className={theme === 'dark' ? 'text-[#8f8f8f]' : 'text-black opacity-60'}>Created by</span>
-        <a className={`no-underline ml-[4px] font-medium transition-colors ${theme === 'dark' ? 'text-[#e9e9e9] hover:text-white' : 'text-black hover:text-black'}`} href="https://x.com/SubhanHQ" target="_blank" rel="noopener noreferrer">Syed Subhan</a>
-        <span className={`mx-1 ${theme === 'dark' ? 'text-[#8f8f8f]' : 'text-black opacity-60'}`}>·</span>
-        <a className={`no-underline transition-colors ${theme === 'dark' ? 'text-[#e9e9e9] hover:text-white' : 'text-black hover:text-black'}`} href="https://github.com/Subhan-code/Amicro--Micro-transitions-#readme">Terms & License</a>
+      {/* Crawlable Semantic Footer Hub with Internal Navigation */}
+      <footer className="relative z-10 w-full border-t mt-auto pt-8 pb-10 px-6 transition-colors duration-300" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+        <div className="max-w-[1240px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px]">
+            <a href="/buttons" onClick={(e) => handleLinkClick(e, 'home', 'buttons')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Buttons</a>
+            <a href="/cards" onClick={(e) => handleLinkClick(e, 'home', 'cards')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Card Spreads</a>
+            <a href="/carousels" onClick={(e) => handleLinkClick(e, 'home', 'carousels')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>3D Carousels</a>
+            <a href="/loaders" onClick={(e) => handleLinkClick(e, 'home', 'loaders')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Loaders</a>
+            <a href="/Anime" onClick={(e) => handleLinkClick(e, 'css-animations')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Anime</a>
+            <a href="/text-animations" onClick={(e) => handleLinkClick(e, 'text-animations')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Text</a>
+            <a href="/mono-charts" onClick={(e) => handleLinkClick(e, 'mono-charts')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Mono Charts</a>
+            <a href="/dither-charts" onClick={(e) => handleLinkClick(e, 'dither-charts')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Dither Charts</a>
+            <a href="/3d" onClick={(e) => handleLinkClick(e, '3d-page')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>3D</a>
+            <a href="/cli" onClick={(e) => handleLinkClick(e, 'cli')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>CLI</a>
+            <a href="/skills" onClick={(e) => handleLinkClick(e, 'skills')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Skills</a>
+            <a href="/sponsors" onClick={(e) => handleLinkClick(e, 'sponsors')} className={`no-underline transition-colors ${theme === 'dark' ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>Sponsors</a>
+          </div>
+
+          <div className="text-[13px] leading-[14px] shrink-0">
+            <span className={theme === 'dark' ? 'text-[#8f8f8f]' : 'text-black opacity-60'}>Created by</span>
+            <a className={`no-underline ml-[4px] font-medium transition-colors ${theme === 'dark' ? 'text-[#e9e9e9] hover:text-white' : 'text-black hover:text-black'}`} href="https://x.com/SubhanHQ" target="_blank" rel="noopener noreferrer">Syed Subhan</a>
+            <span className={`mx-1 ${theme === 'dark' ? 'text-[#8f8f8f]' : 'text-black opacity-60'}`}>·</span>
+            <a className={`no-underline transition-colors ${theme === 'dark' ? 'text-[#e9e9e9] hover:text-white' : 'text-black hover:text-black'}`} href="https://github.com/Subhan-code/Amicro--Micro-transitions-#readme" target="_blank" rel="noopener noreferrer">Terms & License</a>
+          </div>
+        </div>
       </footer>
 
       {/* Copy-Success Toast Alert */}
@@ -1648,8 +1754,6 @@ export default function App() {
           )}
         </AnimatePresence>
       </div>
-
-
 
       <Analytics />
     </div>

@@ -17,6 +17,7 @@ function DockItem({
   mouseX,
   theme = 'dark'
 }: { 
+  key?: React.Key;
   index: number;
   color: string; 
   mouseX: MotionValue<number>; 
