@@ -101,8 +101,7 @@ export const SponsorsPage: React.FC<SponsorsPageProps> = ({
                       <span>Maple</span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center gap-1.5 font-bold tracking-tight text-[14px] text-emerald-500 w-full px-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                    <div className="flex items-center justify-center font-bold tracking-tight text-[14px] text-emerald-500 w-full px-1">
                       <span className="truncate max-w-[120px]">{slot.companyName}</span>
                     </div>
                   )}
@@ -145,8 +144,7 @@ export const SponsorsPage: React.FC<SponsorsPageProps> = ({
       {/* Listed & Featured In Section */}
       <div className="w-full max-w-4xl mb-16 flex flex-col items-center">
         <div className="text-center mb-6 flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-widest mb-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-widest mb-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
             <span>Community Registries</span>
           </div>
           <h3 className={`text-xl sm:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
@@ -226,7 +224,7 @@ export const SponsorsPage: React.FC<SponsorsPageProps> = ({
             </p>
           </motion.a>
 
-          {/* Slot 3: Creative Empty Slot */}
+          {/* Slot 3: Minimal Empty Slot */}
           <div
             className={`relative p-5 rounded-2xl border border-dashed flex flex-col justify-between min-h-[145px] select-none ${
               isDark
@@ -236,24 +234,140 @@ export const SponsorsPage: React.FC<SponsorsPageProps> = ({
           >
             <div className="flex items-start justify-between w-full">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center font-mono font-bold text-xs text-amber-400 shrink-0">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-xs shrink-0 ${
+                  isDark ? 'bg-white/[0.05] border border-white/10 text-neutral-300' : 'bg-neutral-100 border border-neutral-200 text-neutral-700'
+                }`}>
                   +
                 </div>
                 <div>
                   <h4 className={`font-bold text-sm leading-tight ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>
                     More Coming Soon
                   </h4>
-                  <span className="text-[10.5px] text-amber-400/90 font-medium">
+                  <span className={`text-[10.5px] font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                     In Progress ✨
                   </span>
                 </div>
               </div>
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
             </div>
 
             <p className={`text-xs mt-3.5 leading-relaxed italic ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
               Submissions in review across more premier UI catalogs &amp; registries.
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tools I Use Section */}
+      <div className="w-full max-w-4xl mb-16 flex flex-col items-center">
+        <div className="text-center mb-6 flex flex-col items-center">
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-widest mb-2.5 ${
+            isDark ? 'bg-white/[0.05] text-neutral-300 border border-white/10' : 'bg-black/[0.04] text-neutral-700 border border-black/10'
+          }`}>
+            <span>Tools I Use</span>
+          </div>
+          <h3 className={`text-xl sm:text-2xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
+            Built &amp; Measured With
+          </h3>
+          <p className={`text-xs sm:text-sm mt-1 max-w-md ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+            Essential developer analytics and tools powering the Amicro workflow.
+          </p>
+        </div>
+
+        {/* Tracwell Card */}
+        <div
+          className={`relative w-full rounded-2xl sm:rounded-3xl p-6 sm:p-8 transition-all duration-300 border ${
+            isDark
+              ? 'bg-[#181818] border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] text-white'
+              : 'bg-white border-neutral-200 shadow-md text-black'
+          }`}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="flex-1 min-w-0 flex flex-col gap-3.5 max-w-[560px]">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11.5px] font-semibold tracking-wide border ${
+                  isDark
+                    ? 'bg-white/[0.04] border-white/10 text-neutral-300'
+                    : 'bg-black/[0.03] border-black/10 text-neutral-700'
+                }`}>
+                  Focused analytics for founders and small teams
+                </span>
+              </div>
+
+              <div>
+                <h3 className={`text-xl sm:text-2xl font-bold tracking-tight mb-2 ${
+                  isDark ? 'text-white' : 'text-black'
+                }`}>
+                  See what drives traffic, signups, and revenue.
+                </h3>
+                <p className={`m-0 text-[13.5px] sm:text-[14.5px] leading-[22px] sm:leading-[24px] font-normal transition-colors ${
+                  isDark ? 'text-neutral-400' : 'text-neutral-600'
+                }`}>
+                  Find which pages and campaigns bring visitors, where they drop off, and which visits lead to paying customers.
+                </p>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] pt-1">
+                {[
+                  { label: 'Product', href: 'https://tracwell.app/#product' },
+                  { label: 'Features', href: 'https://tracwell.app/#features' },
+                  { label: 'How it works', href: 'https://tracwell.app/#how-it-works' },
+                  { label: 'Pricing', href: 'https://tracwell.app/pricing' },
+                  { label: 'Docs', href: 'https://tracwell.app/docs' },
+                ].map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`font-medium no-underline transition-colors ${
+                      isDark
+                        ? 'text-neutral-400 hover:text-white'
+                        : 'text-neutral-600 hover:text-black'
+                    }`}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <motion.a
+                  href="https://tracwell.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`inline-flex items-center justify-center gap-2 h-[40px] px-5 rounded-full font-medium text-[13px] leading-none no-underline transition-all duration-200 cursor-pointer border ${
+                    isDark
+                      ? 'bg-white text-black hover:bg-neutral-200 border-white/10 shadow-sm'
+                      : 'bg-neutral-950 text-white hover:bg-neutral-800 border-neutral-800 shadow-sm'
+                  }`}
+                >
+                  <span>Visit Tracwell</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </motion.a>
+              </div>
+            </div>
+
+            {/* Tracwell Card Image */}
+            <div className="w-full lg:w-[380px] shrink-0">
+              <a
+                href="https://tracwell.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`block group relative rounded-2xl overflow-hidden border transition-transform duration-300 hover:scale-[1.01] ${
+                  isDark ? 'border-white/10 shadow-lg' : 'border-neutral-200 shadow-md'
+                }`}
+              >
+                <img
+                  src="https://tracwell.app/og?title=counting+visitors+shouldn%E2%80%99t+require+investors.&description=agent-ready+analytics.+refreshingly+cheap.&v=3"
+                  alt="Tracwell — See what drives signups and revenue"
+                  className="w-full h-auto aspect-[1200/630] object-cover block"
+                  loading="lazy"
+                />
+              </a>
+            </div>
           </div>
         </div>
       </div>

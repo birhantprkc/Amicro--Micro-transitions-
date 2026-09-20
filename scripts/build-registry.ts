@@ -1,8 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
-// Define the absolute workspace root
-const WORKSPACE_ROOT = 'c:/Users/we/Desktop/Amicro---Micro-transitions';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 
 interface RegistryFile {
   path: string;

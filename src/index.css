@@ -14,23 +14,59 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar for premium dev look */
+/* Custom Scrollbar for dark and light cement aesthetic */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
+/* Light mode cement scrollbar */
 ::-webkit-scrollbar-thumb {
-  background: rgba(120, 120, 120, 0.2);
+  background-color: #b8bbc1;
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 120, 120, 0.4);
+  background-color: #9aa0a8;
+}
+
+/* Dark mode cement scrollbar */
+:root.dark ::-webkit-scrollbar-thumb,
+html.dark ::-webkit-scrollbar-thumb,
+body.dark ::-webkit-scrollbar-thumb,
+.dark::-webkit-scrollbar-thumb,
+.dark *::-webkit-scrollbar-thumb {
+  background-color: #35373d;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+:root.dark ::-webkit-scrollbar-thumb:hover,
+html.dark ::-webkit-scrollbar-thumb:hover,
+body.dark ::-webkit-scrollbar-thumb:hover,
+.dark::-webkit-scrollbar-thumb:hover,
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: #4b4e57;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b8bbc1 transparent;
+}
+
+:root.dark,
+html.dark,
+body.dark {
+  scrollbar-color: #35373d transparent;
 }
 
 /* Glassmorphism utility classes */
