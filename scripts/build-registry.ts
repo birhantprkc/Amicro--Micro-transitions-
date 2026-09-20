@@ -322,24 +322,129 @@ if (fs.existsSync(loadingDir)) {
         {
           path: `registry/ui/loading/${file}`,
           type: 'registry:ui',
-          target: `@components/amicro/${file}`
+          target: `components/amicro/${file}`
         }
       ]
     });
   }
 }
 
-function build() {
-  console.log('Building custom shadcn registry with target properties...');
+// Dynamically discover transitions if any
+const transitionsDir = path.join(WORKSPACE_ROOT, 'registry/ui/transitions');
+if (fs.existsSync(transitionsDir)) {
+  const files = fs.readdirSync(transitionsDir);
+  for (const file of files) {
+    if (!file.endsWith('.tsx')) continue;
+    const name = file.replace('.tsx', '');
+    if (registryItems.some(item => item.name === name)) continue;
 
-  const outputBaseDir = path.join(WORKSPACE_ROOT, 'registry');
+    const title = name
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    registryItems.push({
+      name,
+      type: 'registry:ui',
+      title,
+      description: 'Dynamic fullscreen page transition animation.',
+      dependencies: ['framer-motion'],
+      files: [
+        {
+          path: `registry/ui/transitions/${file}`,
+          type: 'registry:ui',
+          target: `components/amicro/${file}`
+        }
+      ]
+    });
+  }
+}
+
+// Additional blocks/components from src/components/cards and dither-charts if present
+const extraCards = [
+  {
+    name: 'card-carousel',
+    type: 'registry:block' as const,
+    title: 'Interactive 3D Carousel',
+    description: 'An interactive arc-based 3D motion carousel featuring smooth dot indicators and dynamic prev/next controls.',
+    dependencies: ['motion', 'lucide-react'],
+    files: [{ path: 'src/components/cards/CardCarousel.tsx', type: 'registry:component', target: 'components/amicro/CardCarousel.tsx' }]
+  },
+  {
+    name: 'card-cover-flow',
+    type: 'registry:block' as const,
+    title: 'CoverFlow Carousel',
+    description: 'A premium 3D CoverFlow carousel displaying cards along a perspective path.',
+    dependencies: ['motion', 'lucide-react'],
+    files: [{ path: 'src/components/cards/CardCoverFlow.tsx', type: 'registry:component', target: 'components/amicro/CardCoverFlow.tsx' }]
+  },
+  {
+    name: 'dither-donut-chart',
+    type: 'registry:block' as const,
+    title: 'Dither Donut Chart',
+    description: 'Interactive pixelated dither donut chart with real-time spring physics.',
+    dependencies: ['motion', 'lucide-react'],
+    files: [{ path: 'src/components/dither-charts/DitherDonutChart.tsx', type: 'registry:component', target: 'components/amicro/DitherDonutChart.tsx' }]
+  },
+  {
+    name: 'dither-growth-chart',
+    type: 'registry:block' as const,
+    title: 'Dither Growth Chart',
+    description: '60fps canvas growth line chart with pixel dither fill matrix.',
+    dependencies: ['motion', 'lucide-react'],
+    files: [{ path: 'src/components/dither-charts/DitherGrowthChart.tsx', type: 'registry:component', target: 'components/amicro/DitherGrowthChart.tsx' }]
+  },
+  {
+    name: 'uptime-chart',
+    type: 'registry:block' as const,
+    title: 'Uptime Dither Bar Chart',
+    description: 'Continuous uptime bar chart with dithered matrix animation.',
+    dependencies: ['motion', 'lucide-react'],
+    files: [{ path: 'src/components/dither-charts/UptimeChart.tsx', type: 'registry:component', target: 'components/amicro/UptimeChart.tsx' }]
+  },
+  {
+    name: 'activity-heatmap',
+    type: 'registry:block' as const,
+    title: 'Activity Dither Heatmap',
+    description: 'GitHub-style activity heatmap with interactive dither dots.',
+    dependencies: ['motion', 'lucide-react'],
+    files: [{ path: 'src/components/dither-charts/ActivityHeatmap.tsx', type: 'registry:component', target: 'components/amicro/ActivityHeatmap.tsx' }]
+  }
+];
+
+for (const extra of extraCards) {
+  if (!registryItems.some(item => item.name === extra.name)) {
+    const srcExists = fs.existsSync(path.join(WORKSPACE_ROOT, extra.files[0].path));
+    if (srcExists) {
+      registryItems.push(extra as any);
+    }
+  }
+}
+
+// Clean up any target strings starting with '@' to avoid misconfigured directories
+for (const item of registryItems) {
+  for (const file of item.files) {
+    if (file.target && file.target.startsWith('@')) {
+      file.target = file.target.slice(1);
+    }
+  }
+}
+
+function build() {
+  console.log(`Building full shadcn registry with ${registryItems.length} items...`);
+
+  const registryDir = path.join(WORKSPACE_ROOT, 'registry');
+  const publicDir = path.join(WORKSPACE_ROOT, 'public');
+  const publicRDir = path.join(publicDir, 'r');
 
   // Ensure directories exist
   const dirs = [
-    outputBaseDir,
-    path.join(outputBaseDir, 'ui'),
-    path.join(outputBaseDir, 'hooks'),
-    path.join(outputBaseDir, 'lib')
+    registryDir,
+    path.join(registryDir, 'ui'),
+    path.join(registryDir, 'hooks'),
+    path.join(registryDir, 'lib'),
+    publicDir,
+    publicRDir
   ];
   dirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
@@ -368,7 +473,7 @@ function build() {
       });
     }
 
-    // Build the registry-item content
+    // Build the registry-item payload
     const registryItemPayload = {
       $schema: 'https://ui.shadcn.com/schema/registry-item.json',
       name: item.name,
@@ -380,19 +485,21 @@ function build() {
       files: itemFilesWithContent
     };
 
-    // Save individual item JSON
+    // 1. Save in public/r/[name].json for direct HTTP shadcn resolution (https://domain/r/[name].json)
+    const publicItemJsonPath = path.join(publicRDir, `${item.name}.json`);
+    fs.writeFileSync(publicItemJsonPath, JSON.stringify(registryItemPayload, null, 2), 'utf-8');
+
+    // 2. Save in registry/[type]/[name].json
     let subfolder = 'ui';
     if (item.type === 'registry:hook') {
       subfolder = 'hooks';
     } else if (item.type === 'registry:lib') {
       subfolder = 'lib';
     }
-
-    const itemJsonPath = path.join(outputBaseDir, subfolder, `${item.name}.json`);
+    const itemJsonPath = path.join(registryDir, subfolder, `${item.name}.json`);
     fs.writeFileSync(itemJsonPath, JSON.stringify(registryItemPayload, null, 2), 'utf-8');
-    console.log(`✓ Generated: ${path.relative(WORKSPACE_ROOT, itemJsonPath)}`);
 
-    // Add to master registry listing (without file contents for size efficiency)
+    // Add to master registry listing
     masterItems.push({
       name: item.name,
       type: item.type,
@@ -404,7 +511,7 @@ function build() {
     });
   }
 
-  // Generate master registry.json
+  // Master registry payload
   const masterRegistryPayload = {
     $schema: 'https://ui.shadcn.com/schema/registry.json',
     name: 'amicro',
@@ -412,11 +519,34 @@ function build() {
     items: masterItems
   };
 
-  const masterRegistryPath = path.join(outputBaseDir, 'registry.json');
-  fs.writeFileSync(masterRegistryPath, JSON.stringify(masterRegistryPayload, null, 2), 'utf-8');
-  console.log(`✓ Generated Master Index: ${path.relative(WORKSPACE_ROOT, masterRegistryPath)}`);
+  const masterJsonContent = JSON.stringify(masterRegistryPayload, null, 2);
 
-  console.log('Build completed successfully!');
+  // 1. Workspace root registry.json (for GitHub repository lookups: npx shadcn add owner/repo/item)
+  const rootRegistryPath = path.join(WORKSPACE_ROOT, 'registry.json');
+  fs.writeFileSync(rootRegistryPath, masterJsonContent, 'utf-8');
+  console.log(`✓ Generated Root registry.json: ${path.relative(WORKSPACE_ROOT, rootRegistryPath)}`);
+
+  // 2. public/registry.json (served at https://domain/registry.json)
+  const publicRegistryPath = path.join(publicDir, 'registry.json');
+  fs.writeFileSync(publicRegistryPath, masterJsonContent, 'utf-8');
+  console.log(`✓ Generated Public registry.json: ${path.relative(WORKSPACE_ROOT, publicRegistryPath)}`);
+
+  // 3. public/r/index.json (standard shadcn index of all registry items)
+  const publicRIndexPath = path.join(publicRDir, 'index.json');
+  fs.writeFileSync(publicRIndexPath, JSON.stringify(masterItems, null, 2), 'utf-8');
+  console.log(`✓ Generated Public r/index.json: ${path.relative(WORKSPACE_ROOT, publicRIndexPath)}`);
+
+  // 4. public/r/registry.json (also served at /r/registry.json)
+  const publicRRegistryPath = path.join(publicRDir, 'registry.json');
+  fs.writeFileSync(publicRRegistryPath, masterJsonContent, 'utf-8');
+  console.log(`✓ Generated Public r/registry.json: ${path.relative(WORKSPACE_ROOT, publicRRegistryPath)}`);
+
+  // 5. registry/registry.json
+  const localRegistryPath = path.join(registryDir, 'registry.json');
+  fs.writeFileSync(localRegistryPath, masterJsonContent, 'utf-8');
+  console.log(`✓ Generated registry/registry.json: ${path.relative(WORKSPACE_ROOT, localRegistryPath)}`);
+
+  console.log(`✨ Build completed successfully! Generated ${masterItems.length} registry items across all entrypoints.`);
 }
 
 build();
